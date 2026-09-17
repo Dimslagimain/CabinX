@@ -299,14 +299,14 @@
 /* --- ANALYTICS & CHARTS GRID --- */
 .analytics-grid-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .analytics-grid-3 {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -458,7 +458,7 @@
 /* --- GLOBAL OVERVIEW MULTI-PROJECT CARDS --- */
 .project-showcase-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
     margin-bottom: 2.5rem;
 }
