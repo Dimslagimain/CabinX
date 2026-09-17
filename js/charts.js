@@ -30,6 +30,7 @@ const AerocabinCharts = {
 
     // 1. Render Certification Charts
     renderCertificationCharts() {
+        if (typeof Chart === 'undefined') return;
         const data = AerocabinData.certification;
         const theme = this.getThemeColors();
 
@@ -117,6 +118,7 @@ const AerocabinCharts = {
 
     // 2. Render LDND Carpet Charts
     renderLdndCharts() {
+        if (typeof Chart === 'undefined') return;
         const data = AerocabinData.ldnd;
         const theme = this.getThemeColors();
 
@@ -207,6 +209,7 @@ const AerocabinCharts = {
 
     // 3. Render Lifevest Charts
     renderLifevestCharts() {
+        if (typeof Chart === 'undefined') return;
         const data = AerocabinData.lifevest;
         const theme = this.getThemeColors();
 
@@ -271,6 +274,7 @@ const AerocabinCharts = {
 
     // 4. Render Global Comparison Chart
     renderGlobalCharts() {
+        if (typeof Chart === 'undefined') return;
         const theme = this.getThemeColors();
         const ctxHealth = document.getElementById('globalHealthChart')?.getContext('2d');
         if (ctxHealth) {
