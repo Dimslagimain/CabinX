@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CabinX - Unified Fleet & Operational Command Center | GMF AeroAsia</title>
+    <meta name="description"
+        content="Portal Terpadu Overview Sistem Aviasi GMF AeroAsia: LCU Certification Dashboard, LDND Carpet Monitor, dan Lifevest Monitoring Tracker.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="images/cabinx.jpeg">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- ================= TOP NAVBAR ================= -->
+        <header class="navbar" id="navbar">
+            <div class="navbar-container">
+                <!-- Left: Logo & Sidebar Toggle -->
+                <div class="navbar-left">
+                    <button type="button" id="sidebarToggleDesktopBtn" class="navbar-icon-btn"
+                        title="Toggle Sidebar (Desktop)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+
+                    <button type="button" id="sidebarToggleMobileBtn" class="navbar-icon-btn" style="display: none;"
+                        title="Buka Menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+
+                    <a href="#global" class="navbar-brand" data-tab-target="global">
+                        <div class="navbar-logo-wrap">
+                            <img src="images/cabinx.jpeg" alt="Aerocabin Logo">
+                        </div>
+                        <div class="navbar-brand-text">
+                            <span class="navbar-brand-title">CabinX</span>
+                            <span class="navbar-brand-subtitle">Unified Command Portal</span>
+                        </div>
+                    </a>
+
+                    <!-- Top Module Switcher Pills -->
+                    <div class="nav-module-switcher">
+                        <button type="button" class="nav-module-btn mod-global active" data-tab-target="global"
+                            id="navTabGlobal">
+                            <span>🌐 Global Hub</span>
+                        </button>
+                        <button type="button" class="nav-module-btn mod-cert" data-tab-target="certification"
+                            id="navTabCert">
+                            <span>📜 Certification</span>
+                        </button>
+                        <button type="button" class="nav-module-btn mod-ldnd" data-tab-target="ldnd" id="navTabLdnd">
+                            <span>🧶 LDND Carpet</span>
+                        </button>
+                        <button type="button" class="nav-module-btn mod-lifevest" data-tab-target="lifevest"
+                            id="navTabLifevest">
+                            <span>🦺 Life Vest Tracker</span>
+                        </button>
+                    </div>
+
+                    <span class="navbar-badge">GMF AeroAsia</span>
+                </div>
+
+                <!-- Right: Time, Settings & Theme Toggle -->
+                <div class="navbar-right">
+                    <div class="navbar-time" id="navbarClock">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span id="liveClock">Loading time...</span>
+                    </div>
+
+                    <button type="button" class="navbar-icon-btn" id="settingsOpenBtn" title="Konfigurasi URL Proyek">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </button>
+
+                    <button type="button" class="navbar-icon-btn" id="themeToggleBtn" title="Ganti Mode Gelap / Terang">
+                        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="18.36" x2="5.64" y2="16.93"></line>
+                            <line x1="18.36" y1="4.22" x2="19.78" y2="5.64"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="app-body">
+            <!-- ================= SIDEBAR ================= -->
+            <aside class="sidebar" id="sidebar">
+                <button class="navbar-icon-btn" id="sidebarCloseBtn"
+                    style="display: none; position: absolute; top: 1rem; right: 1rem;" title="Tutup Menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <nav class="sidebar-nav">
+                    <div class="sidebar-section-title">
+                        <span>Command Views</span>
+                    </div>
+
+                    <a href="#global" class="sidebar-nav-item mod-global active" data-tab-target="global"
+                        id="sideTabGlobal">
+                        <div class="sidebar-nav-icon">🌐</div>
+                        <span class="sidebar-nav-text">Global Overview</span>
+                    </a>
+
+                    <div class="sidebar-section-title" style="margin-top: 1rem;">
+                        <span>Project Overviews</span>
+                    </div>
+
+                    <a href="#certification" class="sidebar-nav-item mod-cert" data-tab-target="certification"
+                        id="sideTabCert">
+                        <div class="sidebar-nav-icon">📜</div>
+                        <span class="sidebar-nav-text">Certification Dashboard</span>
+                    </a>
+
+                    <a href="#ldnd" class="sidebar-nav-item mod-ldnd" data-tab-target="ldnd" id="sideTabLdnd">
+                        <div class="sidebar-nav-icon">🧶</div>
+                        <span class="sidebar-nav-text">LDND Carpet Monitor</span>
+                    </a>
+
+                    <a href="#lifevest" class="sidebar-nav-item mod-lifevest" data-tab-target="lifevest"
+                        id="sideTabLifevest">
+                        <div class="sidebar-nav-icon">🦺</div>
+                        <span class="sidebar-nav-text">Lifevest Monitoring</span>
+                    </a>
+
+                    <!-- Sidebar Footer / System Status -->
+                    <div class="sidebar-footer">
+                        <div class="status-widget">
+                            <div class="status-widget-header">
+                                <span style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span class="status-pill-pulse"></span> Sistem Terhubung
+                                </span>
+                                <span style="font-size: 0.65rem; color: var(--text-muted);">3/3 SIAP</span>
+                            </div>
+                            <div class="status-system-row">
+                                <span>Certification LCU</span>
+                                <span class="status-system-tag status-tag-active">ONLINE</span>
+                            </div>
+                            <div class="status-system-row">
+                                <span>LDND Carpet</span>
+                                <span class="status-system-tag status-tag-active">ONLINE</span>
+                            </div>
+                            <div class="status-system-row">
+                                <span>Life Vest Tracker</span>
+                                <span class="status-system-tag status-tag-active">ONLINE</span>
+                            </div>
+                        </div>
+                    </div>
+            </aside>
+
+            <!-- Sidebar Mobile Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+            <!-- ================= MAIN CONTENT ================= -->
+            <main class="main-content" id="mainContent">
+
+                <!-- ════════════════ VIEW 1: GLOBAL OVERVIEW ════════════════ -->
+                <div class="view-pane" id="view-global">
+                    <section class="module-hero theme-global">
+                        <div class="module-hero-left">
+                            <div class="module-meta-badges">
+                                <span class="badge badge-purple">Aerocabin Command Hub</span>
+                                <span class="badge badge-success">● Seluruh Engine Beroperasi Normal</span>
+                            </div>
+                            <h1 class="module-hero-title">
+                                <span>🌐</span> Aerocabin Integrated Overview
+                            </h1>
+                            <p class="module-hero-desc">
+                                Pusat pemantauan performa terpadu untuk kelaikan kabin pesawat dan sertifikasi personel
+                                kedinasan. Pantau ringkasan cepat 3 proyek utama di bawah ini dan klik tombol details
+                                untuk membuka sistem lengkap.
+                            </p>
+                        </div>
+                        <div class="module-hero-right">
+                            <button type="button" class="btn-secondary" id="globalSettingsQuickBtn"
+                                onclick="document.getElementById('settingsOpenBtn').click()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                                </svg>
+                                Atur Alamat Server
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 3 Project Showcase Cards -->
+                    <div class="project-showcase-grid">
+                        <!-- Project 1: Certification -->
+                        <div class="project-showcase-card card-cert">
+                            <div>
+                                <div class="project-card-header">
+                                    <div class="project-card-icon">📜</div>
+                                    <span class="badge badge-info">Learning Center Unit</span>
+                                </div>
+                                <h3 class="project-card-title">Certification Dashboard</h3>
+                                <p class="project-card-desc">
+                                    Pemantauan 53 modul pelatihan kedinasan teknisi, masa berlaku sertifikat, dan audit
+                                    log pembaruan.
+                                </p>
+                                <div class="project-stat-strip">
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val">342</span>
+                                        <span class="project-stat-lbl">Pegawai</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #38bdf8;">91.4%</span>
+                                        <span class="project-stat-lbl">Achievement</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f59e0b;">185</span>
+                                        <span class="project-stat-lbl">Expiring Soon</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f43f5e;">150</span>
+                                        <span class="project-stat-lbl">Expired</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="project-card-footer">
+                                <button type="button" class="btn-secondary" data-tab-target="certification">
+                                    Lihat Ringkasan
+                                </button>
+                                <a href="#" target="_blank" rel="noopener noreferrer"
+                                    class="btn-primary-details theme-cert btn-cert-target"
+                                    title="Buka Aplikasi Certification">
+                                    <span>Details ↗</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Project 2: LDND Carpet -->
+                        <div class="project-showcase-card card-ldnd">
+                            <div>
+                                <div class="project-card-header">
+                                    <div class="project-card-icon">🧶</div>
+                                    <span class="badge badge-success">Cabin Carpet</span>
+                                </div>
+                                <h3 class="project-card-title">LDND Carpet Monitor</h3>
+                                <p class="project-card-desc">
+                                    Pelacakan siklus penggantian karpet pesawat (Last Done / Next Due) armada GA & QG
+                                    serta kontrol stok raw material.
+                                </p>
+                                <div class="project-stat-strip">
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val">84</span>
+                                        <span class="project-stat-lbl">Pesawat</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #10b981;">131</span>
+                                        <span class="project-stat-lbl">Safe Karpet</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f43f5e;">14</span>
+                                        <span class="project-stat-lbl">Already Due</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f59e0b;">23</span>
+                                        <span class="project-stat-lbl">Near Due</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="project-card-footer">
+                                <button type="button" class="btn-secondary" data-tab-target="ldnd">
+                                    Lihat Ringkasan
+                                </button>
+                                <a href="#" target="_blank" rel="noopener noreferrer"
+                                    class="btn-primary-details theme-ldnd btn-ldnd-target" title="Buka Aplikasi LDND">
+                                    <span>Details ↗</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Project 3: Lifevest Monitoring -->
+                        <div class="project-showcase-card card-lifevest">
+                            <div>
+                                <div class="project-card-header">
+                                    <div class="project-card-icon">🦺</div>
+                                    <span class="badge badge-cyan">Safety Equipment</span>
+                                </div>
+                                <h3 class="project-card-title">Lifevest Monitoring</h3>
+                                <p class="project-card-desc">
+                                    Pelacakan masa berlaku pelampung keselamatan kursi penumpang dan kru serta
+                                    forecasting penggantian terjadwal.
+                                </p>
+                                <div class="project-stat-strip">
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val">14,280</span>
+                                        <span class="project-stat-lbl">Total Pelampung</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #06b6d4;">94.2%</span>
+                                        <span class="project-stat-lbl">Safe Health</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f59e0b;">520</span>
+                                        <span class="project-stat-lbl">Warning</span>
+                                    </div>
+                                    <div class="project-stat-item">
+                                        <span class="project-stat-val" style="color: #f43f5e;">210</span>
+                                        <span class="project-stat-lbl">Critical</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="project-card-footer">
+                                <button type="button" class="btn-secondary" data-tab-target="lifevest">
+                                    Lihat Ringkasan
+                                </button>
+                                <a href="#" target="_blank" rel="noopener noreferrer"
+                                    class="btn-primary-details theme-lifevest btn-lifevest-target"
+                                    title="Buka Aplikasi Lifevest">
+                                    <span>Details ↗</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Analytics Charts -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <div>
+                                <h3 class="chart-card-title">
+                                    <span>📊</span> Indeks Kepatuhan & Kelaikan Operasional Lintas Sistem
+                                </h3>
+                                <div class="chart-card-subtitle">Perbandingan rasio kesehatan operasional dari ketiga
+                                    project</div>
+                            </div>
+                            <span class="badge badge-cyan">Real-time Metrics</span>
+                        </div>
+                        <div class="chart-container" style="min-height: 280px;">
+                            <canvas id="globalHealthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════════════════ VIEW 2: CERTIFICATION DASHBOARD ════════════════ -->
+                <div class="view-pane" id="view-certification" style="display: none;">
+                    <section class="module-hero theme-cert">
+                        <div class="module-hero-left">
+                            <div class="module-meta-badges">
+                                <span class="badge badge-info">LCU Learning Center</span>
+                                <span class="badge badge-success">● Service Active</span>
+                            </div>
+                            <h1 class="module-hero-title">
+                                <span>📜</span> LCU Certification & Training
+                            </h1>
+                            <p class="module-hero-desc">
+                                Ringkasan kepatuhan kompetensi kedinasan pegawai GMF AeroAsia (Human Factor, SMS,
+                                EASA/CASR Part 145, Fuel Tank Safety).
+                            </p>
+                        </div>
+                        <div class="module-hero-right">
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="btn-primary-details theme-cert btn-cert-target" id="btnCertHeroDetails">
+                                <span>🚀 Buka Dashboard Lengkap (Details)</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card kpi-accent-cyan">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Total Pegawai</span>
+                                <div class="kpi-icon-wrap">👥</div>
+                            </div>
+                            <div class="kpi-value">342</div>
+                            <div class="kpi-subtext">Terdaftar di database LCU</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-emerald">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Sertifikat Aktif</span>
+                                <div class="kpi-icon-wrap">🛡️</div>
+                            </div>
+                            <div class="kpi-value" style="color: #10b981;">1,510</div>
+                            <div class="kpi-subtext">Masa berlaku aman (>60 hari)</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-amber">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Expiring Soon</span>
+                                <div class="kpi-icon-wrap">⏳</div>
+                            </div>
+                            <div class="kpi-value" style="color: #f59e0b;">185</div>
+                            <div class="kpi-subtext">Jatuh tempo ≤60 hari</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-rose">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Expired</span>
+                                <div class="kpi-icon-wrap">⚠️</div>
+                            </div>
+                            <div class="kpi-value" style="color: #f43f5e;">150</div>
+                            <div class="kpi-subtext">Perlu perpanjangan segera</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="analytics-grid-3">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Proporsi Masa Berlaku</h3>
+                                    <div class="chart-card-subtitle">Distribusi status 1.845 sertifikat</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="certDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Top 6 Modul Pelatihan Terbanyak</h3>
+                                    <div class="chart-card-subtitle">Jumlah pemegang sertifikat per pelatihan kedinasan
+                                    </div>
+                                </div>
+                                <span class="badge badge-info">53 Jenis Modul</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="certModulesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlights Table -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <div class="table-card-title">
+                                <span>🚨</span> Sorotan Perpanjangan Kritis (Actionable Items)
+                            </div>
+                            <span class="badge badge-warning">Perlu Tindak Lanjut</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nama Pegawai</th>
+                                        <th>Modul Sertifikasi</th>
+                                        <th>Departemen</th>
+                                        <th>Tanggal Expired</th>
+                                        <th>Status Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="certHighlightsBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Callout Bottom Link -->
+                    <div class="action-callout">
+                        <div class="action-callout-text">
+                            <h4>Ingin Mengelola Data Sertifikasi, Import Excel, atau Mengunggah Bukti Sertifikat?</h4>
+                            <p>Buka dashboard lengkap Certification untuk akses fitur audit trail perpanjangan,
+                                pengiriman email reminder, dan portal self-service pegawai.</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer"
+                            class="btn-primary-details theme-cert btn-cert-target">
+                            <span>Buka Certification System ↗</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ════════════════ VIEW 3: LDND CARPET MONITOR ════════════════ -->
+                <div class="view-pane" id="view-ldnd" style="display: none;">
+                    <section class="module-hero theme-ldnd">
+                        <div class="module-hero-left">
+                            <div class="module-meta-badges">
+                                <span class="badge badge-success">Cabin Carpet Monitor</span>
+                                <span class="badge badge-neutral">LDND System</span>
+                            </div>
+                            <h1 class="module-hero-title">
+                                <span>🧶</span> LDND Carpet Monitor
+                            </h1>
+                            <p class="module-hero-desc">
+                                Ringkasan siklus penggantian karpet kabin (Aisle & Underseat) untuk armada Garuda
+                                Indonesia dan Citilink, serta kontrol kuantitas raw material.
+                            </p>
+                        </div>
+                        <div class="module-hero-right">
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="btn-primary-details theme-ldnd btn-ldnd-target" id="btnLdndHeroDetails">
+                                <span>🚀 Buka Dashboard Lengkap (Details)</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card kpi-accent-emerald">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Armada Terdaftar</span>
+                                <div class="kpi-icon-wrap">✈️</div>
+                            </div>
+                            <div class="kpi-value">84</div>
+                            <div class="kpi-subtext">Garuda Indonesia & Citilink</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-rose">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Already Due</span>
+                                <div class="kpi-icon-wrap">🔴</div>
+                            </div>
+                            <div class="kpi-value" style="color: #f43f5e;">14</div>
+                            <div class="kpi-subtext">Melewati jadwal penggantian</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-amber">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Near Due</span>
+                                <div class="kpi-icon-wrap">🟡</div>
+                            </div>
+                            <div class="kpi-value" style="color: #f59e0b;">23</div>
+                            <div class="kpi-subtext">Jatuh tempo dalam ≤14 hari</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-cyan">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Stok Raw Material</span>
+                                <div class="kpi-icon-wrap">📦</div>
+                            </div>
+                            <div class="kpi-value" style="font-size: 1.65rem;">
+                                GA: 1,420 <span style="font-size: 0.8rem; color: var(--text-muted);">YD</span>
+                            </div>
+                            <div class="kpi-subtext">Citilink (QG): 980 YD siap pakai</div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Charts -->
+                    <div class="analytics-grid-2">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Status Kesiapan Karpet</h3>
+                                    <div class="chart-card-subtitle">Proporsi On Schedule vs Due</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ldndDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Status Karpet per Tipe Armada</h3>
+                                    <div class="chart-card-subtitle">Breakdown armada B737, A320, A330, B777, ATR</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ldndFleetChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlights Table -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <div class="table-card-title">
+                                <span>⚠️</span> Daftar Pesawat Memerlukan Penggantian Karpet Segera
+                            </div>
+                            <span class="badge badge-danger">High Priority</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Registrasi</th>
+                                        <th>Tipe Pesawat</th>
+                                        <th>Maskapai</th>
+                                        <th>Komponen Karpet</th>
+                                        <th>Last Done</th>
+                                        <th>Next Due</th>
+                                        <th>Status Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ldndHighlightsBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Callout Bottom Link -->
+                    <div class="action-callout">
+                        <div class="action-callout-text">
+                            <h4>Perlu Mencatat Done Penggantian, Update WO, atau Cek Premature Replacement?</h4>
+                            <p>Akses sistem LDND Carpet Monitor lengkap untuk pembaruan master data, konfigurasi
+                                interval hari, dan pencatatan history pemeliharaan.</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer"
+                            class="btn-primary-details theme-ldnd btn-ldnd-target">
+                            <span>Buka LDND Carpet System ↗</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ════════════════ VIEW 4: LIFEVEST MONITORING ════════════════ -->
+                <div class="view-pane" id="view-lifevest" style="display: none;">
+                    <section class="module-hero theme-lifevest">
+                        <div class="module-hero-left">
+                            <div class="module-meta-badges">
+                                <span class="badge badge-cyan">Safety Equipment</span>
+                                <span class="badge badge-success">● Fleet Monitored</span>
+                            </div>
+                            <h1 class="module-hero-title">
+                                <span>🦺</span> Life Vest Tracker
+                            </h1>
+                            <p class="module-hero-desc">
+                                Ringkasan kelaikan pelampung keselamatan kursi kabin pesawat, forecasting masa berlaku,
+                                dan inventaris Part Number keselamatan penerbangan.
+                            </p>
+                        </div>
+                        <div class="module-hero-right">
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="btn-primary-details theme-lifevest btn-lifevest-target"
+                                id="btnLifevestHeroDetails">
+                                <span>🚀 Buka Dashboard Lengkap (Details)</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                    <polyline points="15 3 21 3 21 9" />
+                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card kpi-accent-cyan">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Total Pelampung</span>
+                                <div class="kpi-icon-wrap">🦺</div>
+                            </div>
+                            <div class="kpi-value">14,280</div>
+                            <div class="kpi-subtext">Tersebar di seluruh kursi armada</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-emerald">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Fleet Safety Health</span>
+                                <div class="kpi-icon-wrap">🛡️</div>
+                            </div>
+                            <div class="kpi-value" style="color: #10b981;">94.2%</div>
+                            <div class="kpi-subtext">13.450 kursi berstatus Safe</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-amber">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Warning & Critical</span>
+                                <div class="kpi-icon-wrap">⚠️</div>
+                            </div>
+                            <div class="kpi-value" style="color: #f59e0b;">730</div>
+                            <div class="kpi-subtext">520 Warning, 210 Critical</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-purple">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Forecast Bulanan</span>
+                                <div class="kpi-icon-wrap">📅</div>
+                            </div>
+                            <div class="kpi-value" style="color: #8b5cf6;">210</div>
+                            <div class="kpi-subtext">Unit perlu diganti bulan ini</div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Charts -->
+                    <div class="analytics-grid-2">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Status Keselamatan Pelampung</h3>
+                                    <div class="chart-card-subtitle">Safe, Warning (≤60d), Critical (≤30d), Expired
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="lifevestDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h3 class="chart-card-title">Distribusi Part Number</h3>
+                                    <div class="chart-card-subtitle">Adult, Crew, dan Infant Life Vest</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="lifevestPnChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlights Table -->
+                    <div class="table-card">
+                        <div class="table-card-header">
+                            <div class="table-card-title">
+                                <span>✈️</span> Sorotan Pesawat dengan Pelampung Critical / Expired
+                            </div>
+                            <span class="badge badge-warning">Prioritas Penggantian</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Registrasi</th>
+                                        <th>Tipe Armada</th>
+                                        <th>Maskapai</th>
+                                        <th>Total Kursi</th>
+                                        <th>Critical (&lt;30h)</th>
+                                        <th>Expired</th>
+                                        <th>Tingkat Kelaikan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lifevestHighlightsBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Callout Bottom Link -->
+                    <div class="action-callout">
+                        <div class="action-callout-text">
+                            <h4>Ingin Mengakses Peta Kursi 2D (Seat Map) Interaktif atau Fitur AI Scan PDF LOPA?</h4>
+                            <p>Buka sistem Lifevest Monitoring penuh untuk bulk update tanggal expired per kursi,
+                                download form inspeksi lapangan, dan cetak laporan PDF kabin.</p>
+                        </div>
+                        <a href="#" target="_blank" rel="noopener noreferrer"
+                            class="btn-primary-details theme-lifevest btn-lifevest-target">
+                            <span>Buka Lifevest Tracker System ↗</span>
+                        </a>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ================= SETTINGS MODAL ================= -->
+    <div class="modal-backdrop" id="settingsModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <span>⚙️</span> Konfigurasi Alamat URL Dashboard
+                </h3>
+                <button type="button" class="navbar-icon-btn" id="settingsCloseBtn" title="Tutup">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.5;">
+                    Ubah URL target jika Anda menjalankan masing-masing dashboard pada port localhost yang berbeda atau
+                    domain produksi (Railway / Cloud). Pengaturan ini tersimpan di browser Anda.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="settingCertUrl">
+                        <span>📜</span> URL Certification Dashboard
+                    </label>
+                    <input type="url" id="settingCertUrl" class="form-input"
+                        placeholder="https://certification-dashboard-production.up.railway.app/">
+                    <span class="form-help">Default: https://certification-dashboard-production.up.railway.app/ atau
+                        http://localhost:8000</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="settingLdndUrl">
+                        <span>🧶</span> URL LDND Carpet Monitor
+                    </label>
+                    <input type="url" id="settingLdndUrl" class="form-input" placeholder="http://localhost:3000">
+                    <span class="form-help">Default: http://localhost:3000 (Next.js)</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="settingLifevestUrl">
+                        <span>🦺</span> URL Lifevest Monitoring
+                    </label>
+                    <input type="url" id="settingLifevestUrl" class="form-input" placeholder="http://localhost:8001">
+                    <span class="form-help">Default: http://localhost:8001 (Laravel)</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="settingsCancelBtn">Batal</button>
+                <button type="button" class="btn-primary" id="settingsSaveBtn">Simpan Pengaturan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="badge badge-success" id="toast"
+        style="position: fixed; bottom: 2rem; right: 2rem; z-index: 400; padding: 0.85rem 1.4rem; font-size: 0.9rem; box-shadow: var(--shadow-lg); display: none;">
+        Berhasil disimpan!
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
