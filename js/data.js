@@ -10,8 +10,8 @@ const AerocabinData = {
     // Project URLs are configured in source code only.
     urls: {
         certification: 'https://certification-dashboard-production.up.railway.app/',
-        ldnd: 'http://localhost:3000',
-        lifevest: 'http://localhost:8000',
+        ldnd: 'https://ldnd-flax.vercel.app/',
+        lifevest: 'https://lifevest-monitoring-production-48fa.up.railway.app/',
     },
 
     getUrl(system) {
