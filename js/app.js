@@ -126,7 +126,7 @@ const AerocabinApp = {
                         const url = AerocabinData.getUrl(system);
 
                         if (url && url !== '#') {
-                            window.location.assign(url);
+                            window.open(url, '_blank', 'noopener,noreferrer');
                         }
 
                         return;
