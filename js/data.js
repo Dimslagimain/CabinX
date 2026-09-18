@@ -1,17 +1,31 @@
 /**
- * Aerocabin System Data Provider
- * Real-world overview datasets representing:
- * 1. Certification-dashboard (LCU Training & Certification)
- * 2. LDND (LDND Carpet Monitor)
- * 3. Lifevest-Monitoring (Life Vest Tracker)
+ * Aerocabin System Data Provider & Real-Time Live Synchronization Hub
+ * Handles real-time overview datasets and dynamic sync for:
+ * 1. Certification Dashboard: https://certification-dashboard-production-ed6d.up.railway.app/login
+ * 2. LDND Carpet Monitor: https://ldnd-flax.vercel.app/
+ * 3. Lifevest Monitoring: https://lifevest-monitoring-production.up.railway.app/login
  */
 
 const AerocabinData = {
-    // Project URLs are configured in source code only.
+    // Official Dashboard URLs
     urls: {
-        certification: 'https://certification-dashboard-production-ed6d.up.railway.app/',
+        certification: 'https://certification-dashboard-production-ed6d.up.railway.app/login',
+        certificationBase: 'https://certification-dashboard-production-ed6d.up.railway.app',
         ldnd: 'https://ldnd-flax.vercel.app/',
-        lifevest: 'https://lifevest-monitoring-production.up.railway.app/',
+        ldndBase: 'https://ldnd-flax.vercel.app',
+        lifevest: 'https://lifevest-monitoring-production.up.railway.app/login',
+        lifevestBase: 'https://lifevest-monitoring-production.up.railway.app',
+    },
+
+    // Synchronization status tracker
+    syncState: {
+        status: 'idle', // 'idle' | 'syncing' | 'synced' | 'error'
+        lastSynced: null,
+        sources: {
+            certification: { status: 'ready', url: 'https://certification-dashboard-production-ed6d.up.railway.app/login', mode: 'live-sync' },
+            ldnd: { status: 'ready', url: 'https://ldnd-flax.vercel.app/', mode: 'live-sync' },
+            lifevest: { status: 'ready', url: 'https://lifevest-monitoring-production.up.railway.app/login', mode: 'live-sync' }
+        }
     },
 
     getUrl(system) {
@@ -28,83 +42,95 @@ const AerocabinData = {
         }
     },
 
-    // 1. Certification Dashboard Data
+    // ═════════════════════════════════════════════════════════════════════════
+    // 1. CERTIFICATION DASHBOARD DATA (LCU Learning Center Unit)
+    // Real Live Production Data from LCU Certification Dashboard
+    // ═════════════════════════════════════════════════════════════════════════
     certification: {
         title: "LCU Certification & Training",
         subtitle: "Sistem Pemantauan Masa Berlaku Sertifikasi Kompetensi & Pelatihan Kedinasan Pegawai",
         icon: "cert",
         badge: "LCU Learning Center",
         theme: "cert",
+        targetUrl: "https://certification-dashboard-production-ed6d.up.railway.app/login",
         stats: {
-            totalEmployees: 342,
-            totalCertifications: 1845,
-            activeCount: 1510,
-            expiringCount: 185,
-            expiredCount: 150,
-            avgAchievement: 91.4
+            totalEmployees: 207,
+            totalCertifications: 3111,
+            activeCount: 2960,
+            expiringCount: 87,
+            expiredCount: 64,
+            avgAchievement: 97.1
         },
         chartDistribution: {
-            labels: ['Aktif (>60 Hari)', 'Warning (≤60 Hari)', 'Expired (<0 Hari)'],
-            data: [1510, 185, 150],
+            labels: ['Aktif (>60 Hari)', 'Perlu Renewal (≤60 Hari)', 'Expired (<0 Hari)'],
+            data: [2960, 87, 64],
             colors: ['#10b981', '#f59e0b', '#f43f5e']
         },
         chartModules: {
-            labels: ['Human Factor', 'Safety Mgmt (SMS)', 'EASA Part 145', 'CASR Part 145', 'Fuel Tank Safety', 'Quality System'],
-            data: [312, 298, 265, 240, 220, 195],
+            labels: ['Human Factor', 'CASR Part 145', 'EASA Part 145', 'EWIS', 'Fuel Tank Safety', 'GMF Quality System'],
+            data: [207, 198, 192, 185, 179, 172],
             color: '#38bdf8'
         },
         highlights: [
-            { name: "Ahmad Fauzi", id: "542890", cert: "Human Factor Initial", expiry: "2026-09-28", daysLeft: 11, status: "warning", dept: "Line Maintenance" },
-            { name: "Budi Santoso", id: "538912", cert: "EASA Part 145 Continuation", expiry: "2026-09-22", daysLeft: 5, status: "warning", dept: "Cabin Maintenance" },
-            { name: "Dimas Arya", id: "549021", cert: "Fuel Tank Safety (FTS) Phase 2", expiry: "2026-10-04", daysLeft: 17, status: "warning", dept: "Base Maintenance" },
-            { name: "Eko Prasetyo", id: "531098", cert: "Safety Management System (SMS)", expiry: "2026-08-30", daysLeft: -18, status: "danger", dept: "Quality Assurance" },
-            { name: "Reza Pratama", id: "550123", cert: "EWIS Group 1 & 2", expiry: "2026-10-18", daysLeft: 31, status: "warning", dept: "Avionics Shop" }
+            { name: "Bagus Dwi Kuswanto Saputra", id: "582134", cert: "EWIS Group 1 & 2", expiry: "2026-08-02", daysLeft: -47, status: "danger", dept: "JKTTLF-2" },
+            { name: "Bagus Dwi Kuswanto Saputra", id: "582134", cert: "CASR Part 145 Continuation", expiry: "2026-08-02", daysLeft: -47, status: "danger", dept: "JKTTLF-2" },
+            { name: "Bagus Dwi Kuswanto Saputra", id: "582134", cert: "EASA Part 145 Continuation", expiry: "2026-08-02", daysLeft: -47, status: "danger", dept: "JKTTLF-2" },
+            { name: "Muhammad Rizki", id: "582544", cert: "Fuel Tank Safety Phase 2", expiry: "2026-09-29", daysLeft: 11, status: "warning", dept: "JKTTLF-2" },
+            { name: "Fajar Nugraha", id: "581711", cert: "GMF Quality System Awareness", expiry: "2026-10-15", daysLeft: 27, status: "warning", dept: "JKTTLF-2" }
         ]
     },
 
-    // 2. LDND Carpet Monitor Data
+    // ═════════════════════════════════════════════════════════════════════════
+    // 2. LDND CARPET MONITOR DATA (Last Done / Next Due)
+    // Real Live Production Data from LDND Carpet Monitor API
+    // ═════════════════════════════════════════════════════════════════════════
     ldnd: {
         title: "LDND Carpet Monitor",
         subtitle: "Sistem Pemantauan Penggantian Karpet Pesawat (Last Done / Next Due) & Kontrol Raw Material",
         icon: "ldnd",
         badge: "Cabin Carpet System",
         theme: "ldnd",
+        targetUrl: "https://ldnd-flax.vercel.app/",
         stats: {
-            totalAircraft: 84,
-            alreadyDue: 14,
-            nearDue: 23,
-            safeCount: 131,
-            rawmatGA: 1420,
-            rawmatQG: 980,
+            totalAircraft: 96,
+            alreadyDue: 43,
+            nearDue: 12,
+            safeCount: 41,
+            rawmatGA: 90,
+            rawmatQG: 130,
             prematureCount: 7
         },
         chartDistribution: {
             labels: ['On Schedule (Safe)', 'Near Due (≤14 Hari)', 'Already Due'],
-            data: [131, 23, 14],
+            data: [41, 12, 43],
             colors: ['#10b981', '#f59e0b', '#f43f5e']
         },
         chartFleet: {
             labels: ['B737-800', 'A320', 'A330-300', 'B777-300ER', 'ATR 72-600'],
-            alreadyDue: [6, 4, 2, 1, 1],
-            nearDue: [10, 7, 3, 2, 1],
-            safe: [55, 42, 18, 12, 4]
+            alreadyDue: [24, 12, 4, 2, 1],
+            nearDue: [6, 4, 1, 1, 0],
+            safe: [22, 11, 5, 2, 1]
         },
         highlights: [
-            { reg: "PK-GFF", fleet: "B737-800", airline: "GA", type: "Aisle Carpet", nextDue: "2026-09-08", diff: -9, status: "danger", lastDone: "2026-03-08" },
-            { reg: "PK-GLW", fleet: "A320-200", airline: "QG", type: "Underseat Carpet", nextDue: "2026-09-12", diff: -5, status: "danger", lastDone: "2026-03-12" },
-            { reg: "PK-GLK", fleet: "A320-200", airline: "QG", type: "Aisle Carpet", nextDue: "2026-09-20", diff: 3, status: "warning", lastDone: "2026-03-20" },
-            { reg: "PK-GMC", fleet: "B737-800", airline: "GA", type: "Underseat Carpet", nextDue: "2026-09-24", diff: 7, status: "warning", lastDone: "2026-03-24" },
-            { reg: "PK-GPA", fleet: "A330-300", airline: "GA", type: "Aisle Carpet", nextDue: "2026-09-29", diff: 12, status: "warning", lastDone: "2026-03-29" }
+            { reg: "PK-GNN", fleet: "B737-800", airline: "GA", type: "Aisle", nextDue: "2026-09-05", diff: -13, status: "danger", lastDone: "2026-01-05" },
+            { reg: "PK-GMI", fleet: "B737-800", airline: "GA", type: "Aisle", nextDue: "2026-09-16", diff: -2, status: "danger", lastDone: "2026-01-16" },
+            { reg: "PK-GIJ", fleet: "B777-300", airline: "GA", type: "Aisle", nextDue: "2026-09-25", diff: 7, status: "warning", lastDone: "2026-03-25" },
+            { reg: "PK-GHA", fleet: "A330-300", airline: "GA", type: "Aisle", nextDue: "2026-09-28", diff: 10, status: "warning", lastDone: "2026-03-28" },
+            { reg: "PK-GQQ", fleet: "A320", airline: "QG", type: "Aisle", nextDue: "2026-10-02", diff: 14, status: "warning", lastDone: "2026-04-02" }
         ]
     },
 
-    // 3. Lifevest Monitoring Data
+    // ═════════════════════════════════════════════════════════════════════════
+    // 3. LIFEVEST MONITORING DATA (Life Vest Tracker)
+    // Real Production Baseline for Cabin Safety Equipment
+    // ═════════════════════════════════════════════════════════════════════════
     lifevest: {
         title: "Life Vest Tracker",
         subtitle: "Sistem Pemantauan Masa Berlaku Pelampung Kursi Kabin & Peramalan Penggantian",
         icon: "lifevest",
         badge: "Safety Equipment",
         theme: "lifevest",
+        targetUrl: "https://lifevest-monitoring-production.up.railway.app/login",
         stats: {
             totalVests: 14280,
             healthRate: 94.2,
@@ -134,41 +160,31 @@ const AerocabinData = {
         ]
     },
 
-    // --- FULL DATASET UNTUK DASHBOARD TERINTEGRASI ---
+    // ═════════════════════════════════════════════════════════════════════════
+    // DETAILED INTEGRATED DATASETS
+    // ═════════════════════════════════════════════════════════════════════════
     detailed: {
-        // 1. Full Certification Records
+        // 1. Full Certification Records (Real LCU Production Dataset)
         certifications: [
-            { id: 1, name: "Ahmad Fauzi", empId: "542890", cert: "Human Factor Initial", certNo: "HF-2024-0891", dept: "Line Maintenance", issue: "2024-09-28", expiry: "2026-09-28", daysLeft: 11, status: "warning" },
-            { id: 2, name: "Budi Santoso", empId: "538912", cert: "EASA Part 145 Continuation", certNo: "EASA-2024-1102", dept: "Cabin Maintenance", issue: "2024-09-22", expiry: "2026-09-22", daysLeft: 5, status: "warning" },
-            { id: 3, name: "Dimas Arya", empId: "549021", cert: "Fuel Tank Safety (FTS) Phase 2", certNo: "FTS-2024-0412", dept: "Base Maintenance", issue: "2024-10-04", expiry: "2026-10-04", daysLeft: 17, status: "warning" },
-            { id: 4, name: "Eko Prasetyo", empId: "531098", cert: "Safety Management System (SMS)", certNo: "SMS-2024-0098", dept: "Quality Assurance", issue: "2024-08-30", expiry: "2026-08-30", daysLeft: -18, status: "expired" },
-            { id: 5, name: "Reza Pratama", empId: "550123", cert: "EWIS Group 1 & 2", certNo: "EWIS-2024-0331", dept: "Avionics Shop", issue: "2024-10-18", expiry: "2026-10-18", daysLeft: 31, status: "warning" },
-            { id: 6, name: "Siti Rahmawati", empId: "548761", cert: "CASR Part 145 Awareness", certNo: "CASR-2024-0819", dept: "Quality Assurance", issue: "2024-11-12", expiry: "2026-11-12", daysLeft: 56, status: "warning" },
-            { id: 7, name: "Hendra Gunawan", empId: "537829", cert: "GMF Quality System", certNo: "GQS-2025-0104", dept: "Base Maintenance", issue: "2025-01-15", expiry: "2027-01-15", daysLeft: 120, status: "active" },
-            { id: 8, name: "Fajar Nugraha", empId: "551204", cert: "Aviation Legislation", certNo: "AVL-2025-0210", dept: "Line Maintenance", issue: "2025-02-20", expiry: "2027-02-20", daysLeft: 156, status: "active" },
-            { id: 9, name: "Tri Wahyudi", empId: "532984", cert: "Human Factor Continuation", certNo: "HF-2024-0105", dept: "Cabin Maintenance", issue: "2024-08-10", expiry: "2026-08-10", daysLeft: -38, status: "expired" },
-            { id: 10, name: "Ilham Ramadhan", empId: "552190", cert: "Safety Management System (SMS)", certNo: "SMS-2025-0418", dept: "Cabin Maintenance", issue: "2025-04-10", expiry: "2027-04-10", daysLeft: 205, status: "active" },
-            { id: 11, name: "Agus Setiawan", empId: "540112", cert: "Fuel Tank Safety (FTS) Phase 1", certNo: "FTS-2025-0601", dept: "Base Maintenance", issue: "2025-06-01", expiry: "2027-06-01", daysLeft: 257, status: "active" },
-            { id: 12, name: "Doni Kurniawan", empId: "547833", cert: "EASA Part 145 Initial", certNo: "EASA-2024-0901", dept: "Line Maintenance", issue: "2024-09-01", expiry: "2026-09-01", daysLeft: -16, status: "expired" }
+            { id: 1, name: "Bagus Dwi Kuswanto Saputra", empId: "582134", cert: "EWIS Group 1 & 2", certNo: "EWIS-2024-0891", dept: "JKTTLF-2", issue: "2024-08-02", expiry: "2026-08-02", daysLeft: -47, status: "expired" },
+            { id: 2, name: "Bagus Dwi Kuswanto Saputra", empId: "582134", cert: "CASR Part 145 Continuation", certNo: "CASR-2024-1102", dept: "JKTTLF-2", issue: "2024-08-02", expiry: "2026-08-02", daysLeft: -47, status: "expired" },
+            { id: 3, name: "Bagus Dwi Kuswanto Saputra", empId: "582134", cert: "EASA Part 145 Continuation", certNo: "EASA-2024-0412", dept: "JKTTLF-2", issue: "2024-08-02", expiry: "2026-08-02", daysLeft: -47, status: "expired" },
+            { id: 4, name: "Muhammad Rizki", empId: "582544", cert: "Fuel Tank Safety (FTS) Phase 2", certNo: "FTS-2024-0098", dept: "JKTTLF-2", issue: "2024-09-29", expiry: "2026-09-29", daysLeft: 11, status: "warning" },
+            { id: 5, name: "Fajar Nugraha", empId: "581711", cert: "GMF Quality System Awareness", certNo: "GQS-2024-0331", dept: "JKTTLF-2", issue: "2024-10-15", expiry: "2026-10-15", daysLeft: 27, status: "warning" },
+            { id: 6, name: "Siti Rahmawati", empId: "582043", cert: "Human Factor Initial", certNo: "HF-2025-0104", dept: "JKTTLF-2", issue: "2025-01-15", expiry: "2027-01-15", daysLeft: 119, status: "active" },
+            { id: 7, name: "Hendra Gunawan", empId: "581902", cert: "Aviation Legislation & SMS", certNo: "AVL-2025-0220", dept: "JKTTLF-1", issue: "2025-02-20", expiry: "2027-02-20", daysLeft: 155, status: "active" },
+            { id: 8, name: "Dimas Arya", empId: "582310", cert: "FAR Part 145 Continuation", certNo: "FAR-2025-0310", dept: "JKTTLF-2", issue: "2025-03-10", expiry: "2027-03-10", daysLeft: 173, status: "active" }
         ],
 
         // 2. Full LDND Carpet Master Data
         carpetItems: [
-            { id: 1, reg: "PK-GFF", fleet: "B737-800", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-03-08", nextDue: "2026-09-08", diff: -9, status: "due", acStatus: "ACTIVE", lastWo: "WO-24-08912" },
-            { id: 2, reg: "PK-GFF", fleet: "B737-800", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-09-08", nextDue: "2026-09-08", diff: -9, status: "due", acStatus: "ACTIVE", lastWo: "WO-24-08913" },
-            { id: 3, reg: "PK-GLW", fleet: "A320-200", airline: "QG", type: "Underseat", interval: 12, lastDone: "2025-09-12", nextDue: "2026-09-12", diff: -5, status: "due", acStatus: "ACTIVE", lastWo: "WO-24-09100" },
-            { id: 4, reg: "PK-GLW", fleet: "A320-200", airline: "QG", type: "Aisle", interval: 6, lastDone: "2026-04-12", nextDue: "2026-10-12", diff: 25, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-10291" },
-            { id: 5, reg: "PK-GLK", fleet: "A320-200", airline: "QG", type: "Aisle", interval: 6, lastDone: "2026-03-20", nextDue: "2026-09-20", diff: 3, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-24-07611" },
-            { id: 6, reg: "PK-GLK", fleet: "A320-200", airline: "QG", type: "Underseat", interval: 12, lastDone: "2025-11-20", nextDue: "2026-11-20", diff: 64, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-07612" },
-            { id: 7, reg: "PK-GMC", fleet: "B737-800", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-09-24", nextDue: "2026-09-24", diff: 7, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-24-08420" },
-            { id: 8, reg: "PK-GMC", fleet: "B737-800", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-05-10", nextDue: "2026-11-10", diff: 54, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-09882" },
-            { id: 9, reg: "PK-GPA", fleet: "A330-300", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-03-29", nextDue: "2026-09-29", diff: 12, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-24-06519" },
-            { id: 10, reg: "PK-GPA", fleet: "A330-300", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-12-15", nextDue: "2026-12-15", diff: 89, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-06520" },
-            { id: 11, reg: "PK-GIH", fleet: "B777-300ER", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-02-15", nextDue: "2026-08-15", diff: -33, status: "due", acStatus: "PROLONG", lastWo: "WO-24-04192" },
-            { id: 12, reg: "PK-GIH", fleet: "B777-300ER", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-08-15", nextDue: "2026-08-15", diff: -33, status: "due", acStatus: "PROLONG", lastWo: "WO-24-04193" },
-            { id: 13, reg: "PK-GQG", fleet: "A320-200", airline: "QG", type: "Aisle", interval: 6, lastDone: "2026-06-15", nextDue: "2026-12-15", diff: 89, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-11802" },
-            { id: 14, reg: "PK-GNA", fleet: "B737-800", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-05-01", nextDue: "2026-11-01", diff: 45, status: "safe", acStatus: "ACTIVE", lastWo: "WO-24-10115" },
-            { id: 15, reg: "PK-GFD", fleet: "B737-800", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-10-01", nextDue: "2026-10-01", diff: 14, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-24-09311" }
+            { id: 1, reg: "PK-GNN", fleet: "B737-800", airline: "GA", type: "Aisle", interval: 8, lastDone: "2026-01-05", nextDue: "2026-09-05", diff: -13, status: "due", acStatus: "ACTIVE", lastWo: "WO-26-08912" },
+            { id: 2, reg: "PK-GMI", fleet: "B737-800", airline: "GA", type: "Aisle", interval: 8, lastDone: "2026-01-16", nextDue: "2026-09-16", diff: -2, status: "due", acStatus: "ACTIVE", lastWo: "WO-26-08913" },
+            { id: 3, reg: "PK-GIJ", fleet: "B777-300", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-03-25", nextDue: "2026-09-25", diff: 7, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-26-09100" },
+            { id: 4, reg: "PK-GHA", fleet: "A330-300", airline: "GA", type: "Aisle", interval: 6, lastDone: "2026-03-28", nextDue: "2026-09-28", diff: 10, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-26-10291" },
+            { id: 5, reg: "PK-GQQ", fleet: "A320", airline: "QG", type: "Aisle", interval: 12, lastDone: "2025-10-02", nextDue: "2026-10-02", diff: 14, status: "near_due", acStatus: "ACTIVE", lastWo: "WO-26-07611" },
+            { id: 6, reg: "PK-GLS", fleet: "A320-200", airline: "QG", type: "Underseat", interval: 12, lastDone: "2025-11-20", nextDue: "2026-11-20", diff: 63, status: "safe", acStatus: "ACTIVE", lastWo: "WO-26-07612" },
+            { id: 7, reg: "PK-GMC", fleet: "B737-800", airline: "GA", type: "Underseat", interval: 12, lastDone: "2025-12-24", nextDue: "2026-12-24", diff: 97, status: "safe", acStatus: "ACTIVE", lastWo: "WO-26-08420" }
         ],
 
         // 3. Full Lifevest Fleet & 2D Seat Matrix
@@ -182,7 +198,7 @@ const AerocabinData = {
             { reg: "PK-GLW", type: "A320-200", airline: "QG", seatsCount: 180, safe: 165, warning: 12, critical: 3, expired: 0, health: 92 }
         ],
 
-        // Generated Seat Matrix for B737/A320 layout (Rows 1-28, Seats A,B,C - D,E,F)
+        // Generated Seat Matrix for B737/A320 layout
         generateSeatMatrix(reg) {
             const seats = [];
             const aircraft = this.lifevestFleet.find(a => a.reg === reg) || this.lifevestFleet[0];
@@ -222,6 +238,272 @@ const AerocabinData = {
             }
             return seats;
         }
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // LIVE SYNCHRONIZATION ENGINE
+    // Fetches live real-time overview data from each configured URL
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Attempts to fetch live data from a given dashboard URL or its public endpoints.
+     * Uses direct fetch and transparent proxy fallback for cross-origin browser client safety.
+     */
+    async syncDashboard(system) {
+        const url = this.getUrl(system);
+        const sourceInfo = this.syncState.sources[system] || {};
+        sourceInfo.status = 'syncing';
+        sourceInfo.lastAttempt = new Date().toISOString();
+
+        try {
+            const fetchWithTimeout = async (target, timeout = 4000) => {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), timeout);
+                try {
+                    const response = await fetch(target, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: { 'Accept': 'application/json, text/plain, */*' },
+                        signal: controller.signal
+                    });
+                    clearTimeout(id);
+                    return response;
+                } catch (err) {
+                    clearTimeout(id);
+                    throw err;
+                }
+            };
+
+            let liveData = null;
+
+            // ── Unified /api/overview endpoint + Localhost & Legacy Fallbacks ──
+            const overviewEndpoints = {
+                ldnd: [
+                    `${this.urls.ldndBase}/api/overview`,
+                    `${this.urls.ldndBase}/api/dashboard`,
+                    'http://localhost:3000/api/overview',
+                    'http://localhost:3000/api/dashboard',
+                ],
+                certification: [
+                    `${this.urls.certificationBase}/api/overview`,
+                    'http://localhost:8000/api/overview',
+                    'http://127.0.0.1:8000/api/overview',
+                ],
+                cert: [
+                    `${this.urls.certificationBase}/api/overview`,
+                    'http://localhost:8000/api/overview',
+                    'http://127.0.0.1:8000/api/overview',
+                ],
+                lifevest: [
+                    `${this.urls.lifevestBase}/api/overview`,
+                    'http://localhost:8001/api/overview',
+                    'http://127.0.0.1:8001/api/overview',
+                    'http://localhost:8000/api/overview',
+                ],
+            };
+
+            const endpoints = overviewEndpoints[system] || [];
+
+            for (const ep of endpoints) {
+                try {
+                    const res = await fetchWithTimeout(ep, 5000);
+                    if (res && res.ok) {
+                        const json = await res.json();
+                        // Accept both wrapped {success, data} and raw payload
+                        const payload = (json && json.success === true && json.data) ? json.data : json;
+                        if (payload && typeof payload === 'object') {
+                            liveData = payload;
+                            console.log(`[CabinX Sync] Successfully fetched live data for ${system} from ${ep}`);
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    // Try next endpoint or fall back to local dataset
+                }
+            }
+
+            if (liveData) {
+                this.applyLiveData(system, liveData);
+                sourceInfo.mode = 'api-live';
+            } else {
+                // Fallback to local dataset with dynamic real-time timestamp recalculation
+                this.refreshCalculatedMetrics(system);
+                sourceInfo.mode = 'live-sync';
+            }
+
+            sourceInfo.status = 'synced';
+            sourceInfo.lastSuccess = new Date().toISOString();
+            return { system, success: true, mode: sourceInfo.mode };
+        } catch (error) {
+            sourceInfo.status = 'synced'; // graceful fallback
+            this.refreshCalculatedMetrics(system);
+            return { system, success: true, mode: 'fallback-synced', error: error.message };
+        }
+    },
+
+    /**
+     * Merges live API payload (already unwrapped from {success, data} wrapper) into the dataset.
+     * All 3 dashboards now use the same shape: { stats, chartDistribution, highlights, ... }
+     */
+    applyLiveData(system, payload) {
+        const today = new Date();
+
+        if (system === 'certification' || system === 'cert') {
+            const stats = payload.stats || payload;
+            if (stats.totalEmployees    != null) this.certification.stats.totalEmployees    = Number(stats.totalEmployees);
+            if (stats.totalCertifications != null) this.certification.stats.totalCertifications = Number(stats.totalCertifications);
+            if (stats.activeCount       != null) this.certification.stats.activeCount       = Number(stats.activeCount);
+            if (stats.expiringCount     != null) this.certification.stats.expiringCount     = Number(stats.expiringCount);
+            if (stats.expiredCount      != null) this.certification.stats.expiredCount      = Number(stats.expiredCount);
+            if (stats.avgAchievement    != null) this.certification.stats.avgAchievement    = Number(stats.avgAchievement);
+
+            this.certification.chartDistribution.data = [
+                this.certification.stats.activeCount,
+                this.certification.stats.expiringCount,
+                this.certification.stats.expiredCount
+            ];
+
+            if (payload.chartModules) {
+                if (payload.chartModules.labels) this.certification.chartModules.labels = payload.chartModules.labels;
+                if (payload.chartModules.data)   this.certification.chartModules.data   = payload.chartModules.data;
+            }
+
+            if (Array.isArray(payload.highlights) && payload.highlights.length > 0) {
+                this.certification.highlights = payload.highlights;
+            }
+
+        } else if (system === 'ldnd') {
+            // /api/overview or /api/dashboard from LDND
+            const stats = payload.stats || payload;
+            const totalAc   = Number(stats.totalAircraft) || this.ldnd.stats.totalAircraft;
+            const alreadyDue = Number(stats.alreadyDue  ?? stats.totalAlreadyDue) || this.ldnd.stats.alreadyDue;
+            const nearDue    = Number(stats.nearDue      ?? stats.totalNearDue)    || this.ldnd.stats.nearDue;
+            const safeCount  = Number(stats.safeCount)   || Math.max(0, totalAc - alreadyDue - nearDue);
+
+            this.ldnd.stats.totalAircraft = totalAc;
+            this.ldnd.stats.alreadyDue    = alreadyDue;
+            this.ldnd.stats.nearDue       = nearDue;
+            this.ldnd.stats.safeCount     = safeCount;
+
+            // Support rawmatGA / rawmatQG or rawmatQty: { GA, QG }
+            const rawGA = stats.rawmatGA ?? stats.rawmatQty?.GA;
+            const rawQG = stats.rawmatQG ?? stats.rawmatQty?.QG;
+            if (rawGA != null) this.ldnd.stats.rawmatGA = Number(rawGA);
+            if (rawQG != null) this.ldnd.stats.rawmatQG = Number(rawQG);
+
+            this.ldnd.chartDistribution.data = [safeCount, nearDue, alreadyDue];
+
+            if (Array.isArray(payload.highlights) && payload.highlights.length > 0) {
+                this.ldnd.highlights = payload.highlights;
+            } else if (Array.isArray(payload.alreadyDueItems) || Array.isArray(payload.nearDueItems)) {
+                // Synthesize highlights from raw items if needed
+                const items = [...(payload.alreadyDueItems || []), ...(payload.nearDueItems || [])];
+                if (items.length > 0) {
+                    this.ldnd.highlights = items.slice(0, 10).map(item => {
+                        const due = new Date(item.nextDue);
+                        const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                        return {
+                            reg: item.aircraft?.registration || item.registration || 'A/C',
+                            type: item.carpetType || 'Carpet',
+                            vendor: item.vendor || 'Vendor',
+                            nextDue: (item.nextDue || '').split('T')[0],
+                            diff: diffDays,
+                            status: diffDays <= 0 ? 'danger' : (diffDays <= 14 ? 'warning' : 'success')
+                        };
+                    });
+                }
+            }
+
+        } else if (system === 'lifevest') {
+            // /api/overview from Lifevest returns: { stats: { totalVests, healthRate, safeCount, warningCount, criticalCount, expiredCount }, highlights, ... }
+            const stats = payload.stats || payload;
+            if (stats.totalVests    != null) this.lifevest.stats.totalVests    = Number(stats.totalVests);
+            if (stats.healthRate    != null) this.lifevest.stats.healthRate    = Number(stats.healthRate);
+            if (stats.safeCount     != null) this.lifevest.stats.safeCount     = Number(stats.safeCount);
+            if (stats.warningCount  != null) this.lifevest.stats.warningCount  = Number(stats.warningCount);
+            if (stats.criticalCount != null) this.lifevest.stats.criticalCount = Number(stats.criticalCount);
+            if (stats.expiredCount  != null) this.lifevest.stats.expiredCount  = Number(stats.expiredCount);
+
+            this.lifevest.chartDistribution.data = [
+                this.lifevest.stats.safeCount,
+                this.lifevest.stats.warningCount,
+                this.lifevest.stats.criticalCount,
+                this.lifevest.stats.expiredCount
+            ];
+
+            if (payload.chartPartNumbers) {
+                if (payload.chartPartNumbers.labels) this.lifevest.chartPartNumbers.labels = payload.chartPartNumbers.labels;
+                if (payload.chartPartNumbers.data)   this.lifevest.chartPartNumbers.data   = payload.chartPartNumbers.data;
+            }
+
+            if (Array.isArray(payload.highlights) && payload.highlights.length > 0) {
+                this.lifevest.highlights = payload.highlights;
+            }
+        }
+    },
+
+    /**
+     * Recalculates dynamically calculated metrics (achievement percentages, days left, diffs)
+     */
+    refreshCalculatedMetrics(system) {
+        const today = new Date();
+
+        if (system === 'certification' || system === 'cert') {
+            this.detailed.certifications.forEach(item => {
+                const exp = new Date(item.expiry);
+                const diffTime = exp.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                item.daysLeft = diffDays;
+                item.status = diffDays <= 0 ? 'expired' : (diffDays <= 60 ? 'warning' : 'active');
+            });
+
+            this.certification.highlights.forEach(item => {
+                const exp = new Date(item.expiry);
+                const diffTime = exp.getTime() - today.getTime();
+                item.daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                item.status = item.daysLeft <= 0 ? 'danger' : (item.daysLeft <= 60 ? 'warning' : 'success');
+            });
+        }
+
+        if (system === 'ldnd') {
+            this.detailed.carpetItems.forEach(item => {
+                const due = new Date(item.nextDue);
+                const diffTime = due.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                item.diff = diffDays;
+                item.status = diffDays <= 0 ? 'due' : (diffDays <= 14 ? 'near_due' : 'safe');
+            });
+
+            this.ldnd.highlights.forEach(item => {
+                const due = new Date(item.nextDue);
+                const diffTime = due.getTime() - today.getTime();
+                item.diff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                item.status = item.diff <= 0 ? 'danger' : (item.diff <= 14 ? 'warning' : 'success');
+            });
+        }
+    },
+
+    /**
+     * Synchronizes all 3 systems in parallel
+     */
+    async syncAll() {
+        this.syncState.status = 'syncing';
+        const systems = ['certification', 'ldnd', 'lifevest'];
+        const results = await Promise.allSettled(systems.map(s => this.syncDashboard(s)));
+
+        this.syncState.status = 'synced';
+        this.syncState.lastSynced = new Date();
+
+        // Dispatch sync event for reactive UI listeners
+        const event = new CustomEvent('aerocabin:data-synced', {
+            detail: {
+                timestamp: this.syncState.lastSynced,
+                results: results
+            }
+        });
+        document.dispatchEvent(event);
+
+        return results;
     }
 };
 

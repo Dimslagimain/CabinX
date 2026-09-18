@@ -108,6 +108,27 @@
     background: var(--bg-card-hover);
 }
 
+.btn-secondary.is-syncing {
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.btn-secondary.is-syncing #syncDot {
+    animation: syncDotPulse 0.8s infinite alternate;
+}
+
+@keyframes syncDotPulse {
+    from {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    to {
+        transform: scale(1.3);
+        opacity: 1;
+        box-shadow: 0 0 10px #f59e0b;
+    }
+}
+
 /* Action button inside tables */
 .btn-table-action {
     display: inline-flex;

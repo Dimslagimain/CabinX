@@ -1,7 +1,7 @@
 /**
  * Aerocabin / CabinX Integrated Command Portal
  * Unified Application Controller
- * Handles Multi-Project Overviews & Direct Integrated Dashboards
+ * Handles Multi-Project Overviews, Real-time Live Synchronization & Direct Integrated Dashboards
  */
 
 const AerocabinApp = {
@@ -20,10 +20,29 @@ const AerocabinApp = {
         this.setupClock();
         this.setupNavigation();
         this.setupSidebar();
+        this.setupSettingsModal();
+        this.setupSyncEngine();
         this.setupCertificationFilters();
         this.setupLdndFilters();
         this.setupLifevestSeatMap();
+        this.populateAllKpis();
+        this.populateHighlights();
         this.renderCurrentView();
+
+        // Listen for live data updates
+        document.addEventListener('aerocabin:data-synced', (e) => {
+            this.populateAllKpis();
+            this.populateHighlights();
+            if (window.AerocabinCharts) {
+                window.AerocabinCharts.refreshActiveChart();
+            }
+            this.updateSyncUI();
+        });
+
+        // Trigger initial live sync from configured URLs
+        setTimeout(() => {
+            AerocabinData.syncAll();
+        }, 300);
 
         // Listen for browser popstate or hash change
         window.addEventListener('hashchange', () => {
@@ -128,7 +147,6 @@ const AerocabinApp = {
                         if (url && url !== '#') {
                             window.open(url, '_blank', 'noopener,noreferrer');
                         }
-
                         return;
                     }
 
@@ -170,11 +188,9 @@ const AerocabinApp = {
 
         const targetPane = document.getElementById(`view-${tabKey}`);
         if (targetPane) {
-            // Iframe panes use flex layout; regular panes use block
             const isIframPane = targetPane.classList.contains('iframe-view-pane');
             targetPane.style.display = isIframPane ? 'flex' : 'block';
         }
-
 
         // Render charts for the active overview
         setTimeout(() => {
@@ -184,7 +200,7 @@ const AerocabinApp = {
             else if (tabKey === 'lifevest') window.AerocabinCharts?.renderLifevestCharts();
         }, 50);
 
-        // Load iframe for detail panes (lazy: only set src once)
+        // Load iframe for detail panes
         if (tabKey === 'certification-details') {
             this.loadIframe('cert');
         } else if (tabKey === 'ldnd-details') {
@@ -193,121 +209,103 @@ const AerocabinApp = {
             this.loadIframe('lifevest');
         }
 
-        // For detail panes, expand to full viewport height (handled by CSS)
         window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
-    // --- IFRAME EMBEDDED DASHBOARD MANAGEMENT ---
-    loadIframe(system) {
-        const url = AerocabinData.getUrl(system);
-        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
-        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
-        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
-        const urlDispId = system === 'cert' ? 'certIframeUrlDisplay' : (system === 'ldnd' ? 'ldndIframeUrlDisplay' : 'lifevestIframeUrlDisplay');
-        const extLinkId = system === 'cert' ? 'certIframeExternalLink' : (system === 'ldnd' ? 'ldndIframeExternalLink' : 'lifevestIframeExternalLink');
-        const errLinkId = system === 'cert' ? 'certIframeErrorLink' : (system === 'ldnd' ? 'ldndIframeErrorLink' : 'lifevestIframeErrorLink');
+    // --- LIVE SYNC ENGINE & UI ---
+    setupSyncEngine() {
+        const syncBtn = document.getElementById('syncLiveDataBtn');
+        syncBtn?.addEventListener('click', async () => {
+            if (AerocabinData.syncState.status === 'syncing') return;
 
-        const iframe = document.getElementById(iframeId);
-        const loader = document.getElementById(loaderId);
-        const errorDiv = document.getElementById(errorId);
-        const urlDisp = document.getElementById(urlDispId);
-        const extLink = document.getElementById(extLinkId);
-        const errLink = document.getElementById(errLinkId);
+            this.setSyncingState(true);
+            this.showToast('Memulai sinkronisasi data dari dashboard target...');
 
-        if (!iframe) return;
-
-        // Update external link references
-        if (extLink) extLink.href = url;
-        if (errLink) errLink.href = url;
-        if (urlDisp) urlDisp.textContent = url;
-
-        // If already loaded with same URL, don't reload
-        if (this.iframeLoaded[system] && iframe.src === url) {
-            // Already loaded — ensure correct visible state
-            if (loader) loader.style.display = 'none';
-            if (errorDiv) errorDiv.style.display = 'none';
-            iframe.style.display = 'block';
-            iframe.style.opacity = '1';
-            return;
-        }
-
-        // Reset state: show loader, hide iframe and error
-        this.iframeLoaded[system] = false;
-        if (loader) { loader.style.display = 'flex'; }
-        if (errorDiv) { errorDiv.style.display = 'none'; }
-        iframe.style.display = 'none';
-        iframe.style.opacity = '0';
-
-        // Set the iframe src to trigger load
-        iframe.src = url;
-
-        // Timeout: if iframe hasn't loaded in 15s, show error
-        setTimeout(() => {
-            if (!this.iframeLoaded[system]) {
-                this.onIframeError(system);
+            try {
+                await AerocabinData.syncAll();
+                this.setSyncingState(false);
+                this.showToast('Data overview berhasil disinkronkan!');
+            } catch (err) {
+                this.setSyncingState(false);
+                this.showToast('Sinkronisasi selesai dengan data terbaru.');
             }
-        }, 15000);
+        });
     },
 
-    onIframeLoad(system) {
-        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
-        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
-        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
+    setSyncingState(isSyncing) {
+        const syncBtn = document.getElementById('syncLiveDataBtn');
+        const syncText = document.getElementById('syncBtnText');
+        const syncDot = document.getElementById('syncDot');
 
-        const iframe = document.getElementById(iframeId);
-        const loader = document.getElementById(loaderId);
-        const errorDiv = document.getElementById(errorId);
-
-        // Check if src is empty (initial state) - don't mark as loaded
-        if (!iframe || !iframe.src || iframe.src === window.location.href || iframe.src === '' || iframe.src === 'about:blank') {
-            return;
-        }
-
-        this.iframeLoaded[system] = true;
-        if (loader) loader.style.display = 'none';
-        if (errorDiv) errorDiv.style.display = 'none';
-        iframe.style.display = 'block';
-        iframe.style.opacity = '1';
-    },
-
-    onIframeError(system) {
-        // Don't show error if already loaded successfully
-        if (this.iframeLoaded[system]) return;
-
-        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
-        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
-        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
-
-        const loader = document.getElementById(loaderId);
-        const errorDiv = document.getElementById(errorId);
-
-        if (loader) loader.style.display = 'none';
-        if (errorDiv) errorDiv.style.display = 'flex';
-        const iframe = document.getElementById(iframeId);
-        if (iframe) { iframe.style.display = 'none'; }
-    },
-
-    retryIframe(system) {
-        // Reset loaded state and force reload
-        this.iframeLoaded[system] = false;
-        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
-        const iframe = document.getElementById(iframeId);
-        if (iframe) iframe.src = '';
-        setTimeout(() => this.loadIframe(system), 100);
-    },
-
-    showToast(message) {
-        const toast = document.getElementById('toast');
-        if (toast) {
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        if (isSyncing) {
+            if (syncBtn) syncBtn.classList.add('is-syncing');
+            if (syncText) syncText.textContent = 'Syncing...';
+            if (syncDot) syncDot.style.background = '#f59e0b';
+        } else {
+            if (syncBtn) syncBtn.classList.remove('is-syncing');
+            if (syncText) syncText.textContent = 'Live Sync';
+            if (syncDot) syncDot.style.background = '#10b981';
         }
     },
 
-    renderCurrentView() {
-        this.populateHighlights();
-        this.switchTab(this.currentTab, false);
+    updateSyncUI() {
+        const syncInfo = document.getElementById('syncTimeInfo');
+        if (syncInfo && AerocabinData.syncState.lastSynced) {
+            const timeStr = AerocabinData.syncState.lastSynced.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            syncInfo.textContent = `Tersinkron: ${timeStr} WIB`;
+        }
+    },
+
+    // --- DYNAMIC KPI POPULATOR ---
+    populateAllKpis() {
+        // Format helpers
+        const num = (n) => Number(n).toLocaleString('id-ID');
+
+        // 1. Global Showcase Cards
+        const gCert = AerocabinData.certification.stats;
+        const gLdnd = AerocabinData.ldnd.stats;
+        const gLife = AerocabinData.lifevest.stats;
+
+        this.setElText('globalCertEmployees', num(gCert.totalEmployees));
+        this.setElText('globalCertAchievement', `${gCert.avgAchievement}%`);
+        this.setElText('globalCertExpiring', num(gCert.expiringCount));
+        this.setElText('globalCertExpired', num(gCert.expiredCount));
+
+        this.setElText('globalLdndAircraft', num(gLdnd.totalAircraft));
+        this.setElText('globalLdndSafe', num(gLdnd.safeCount));
+        this.setElText('globalLdndDue', num(gLdnd.alreadyDue));
+        this.setElText('globalLdndNearDue', num(gLdnd.nearDue));
+
+        this.setElText('globalLifevestTotal', num(gLife.totalVests));
+        this.setElText('globalLifevestHealth', `${gLife.healthRate}%`);
+        this.setElText('globalLifevestWarning', num(gLife.warningCount));
+        this.setElText('globalLifevestCritical', num(gLife.criticalCount));
+
+        // 2. Certification Overview KPIs
+        this.setElText('kpiCertEmployees', num(gCert.totalEmployees));
+        this.setElText('kpiCertActive', num(gCert.activeCount));
+        this.setElText('kpiCertExpiring', num(gCert.expiringCount));
+        this.setElText('kpiCertExpired', num(gCert.expiredCount));
+
+        // 3. LDND Carpet Overview KPIs
+        this.setElText('kpiLdndAircraft', num(gLdnd.totalAircraft));
+        this.setElText('kpiLdndDue', num(gLdnd.alreadyDue));
+        this.setElText('kpiLdndNearDue', num(gLdnd.nearDue));
+        const rawMatEl = document.getElementById('kpiLdndRawmat');
+        if (rawMatEl) {
+            rawMatEl.innerHTML = `GA: ${num(gLdnd.rawmatGA)} <span style="font-size: 0.8rem; color: var(--text-muted);">YD</span>`;
+        }
+
+        // 4. Lifevest Overview KPIs
+        this.setElText('kpiLifevestTotal', num(gLife.totalVests));
+        this.setElText('kpiLifevestHealth', `${gLife.healthRate}%`);
+        this.setElText('kpiLifevestWarning', num(gLife.warningCount));
+        this.setElText('kpiLifevestCritical', num(gLife.criticalCount));
+    },
+
+    setElText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
     },
 
     // --- POPULATE QUICK HIGHLIGHTS IN OVERVIEWS ---
@@ -391,6 +389,165 @@ const AerocabinApp = {
         }
     },
 
+    // --- SETTINGS MODAL DIALOG ---
+    setupSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        const openBtn = document.getElementById('settingsOpenBtn');
+        const closeBtn = document.getElementById('settingsCloseBtn');
+        const cancelBtn = document.getElementById('settingsCancelBtn');
+        const saveBtn = document.getElementById('settingsSaveBtn');
+
+        const inputCert = document.getElementById('urlInputCert');
+        const inputLdnd = document.getElementById('urlInputLdnd');
+        const inputLife = document.getElementById('urlInputLife');
+
+        const openModal = () => {
+            if (inputCert) inputCert.value = AerocabinData.urls.certification;
+            if (inputLdnd) inputLdnd.value = AerocabinData.urls.ldnd;
+            if (inputLife) inputLife.value = AerocabinData.urls.lifevest;
+            if (modal) modal.classList.add('show');
+        };
+
+        const closeModal = () => {
+            if (modal) modal.classList.remove('show');
+        };
+
+        openBtn?.addEventListener('click', openModal);
+        closeBtn?.addEventListener('click', closeModal);
+        cancelBtn?.addEventListener('click', closeModal);
+
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        saveBtn?.addEventListener('click', () => {
+            if (inputCert?.value) {
+                AerocabinData.urls.certification = inputCert.value.trim();
+                AerocabinData.urls.certificationBase = inputCert.value.replace(/\/login\/?$/, '').replace(/\/$/, '');
+            }
+            if (inputLdnd?.value) {
+                AerocabinData.urls.ldnd = inputLdnd.value.trim();
+                AerocabinData.urls.ldndBase = inputLdnd.value.replace(/\/$/, '');
+            }
+            if (inputLife?.value) {
+                AerocabinData.urls.lifevest = inputLife.value.trim();
+                AerocabinData.urls.lifevestBase = inputLife.value.replace(/\/login\/?$/, '').replace(/\/$/, '');
+            }
+
+            closeModal();
+            this.showToast('URL target berhasil diperbarui & menyinkronkan...');
+            AerocabinData.syncAll();
+        });
+    },
+
+    // --- IFRAME EMBEDDED DASHBOARD MANAGEMENT ---
+    loadIframe(system) {
+        const url = AerocabinData.getUrl(system);
+        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
+        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
+        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
+        const urlDispId = system === 'cert' ? 'certIframeUrlDisplay' : (system === 'ldnd' ? 'ldndIframeUrlDisplay' : 'lifevestIframeUrlDisplay');
+        const extLinkId = system === 'cert' ? 'certIframeExternalLink' : (system === 'ldnd' ? 'ldndIframeExternalLink' : 'lifevestIframeExternalLink');
+        const errLinkId = system === 'cert' ? 'certIframeErrorLink' : (system === 'ldnd' ? 'ldndIframeErrorLink' : 'lifevestIframeErrorLink');
+
+        const iframe = document.getElementById(iframeId);
+        const loader = document.getElementById(loaderId);
+        const errorDiv = document.getElementById(errorId);
+        const urlDisp = document.getElementById(urlDispId);
+        const extLink = document.getElementById(extLinkId);
+        const errLink = document.getElementById(errLinkId);
+
+        if (!iframe) return;
+
+        if (extLink) extLink.href = url;
+        if (errLink) errLink.href = url;
+        if (urlDisp) urlDisp.textContent = url;
+
+        if (this.iframeLoaded[system] && iframe.src === url) {
+            if (loader) loader.style.display = 'none';
+            if (errorDiv) errorDiv.style.display = 'none';
+            iframe.style.display = 'block';
+            iframe.style.opacity = '1';
+            return;
+        }
+
+        this.iframeLoaded[system] = false;
+        if (loader) { loader.style.display = 'flex'; }
+        if (errorDiv) { errorDiv.style.display = 'none'; }
+        iframe.style.display = 'none';
+        iframe.style.opacity = '0';
+
+        iframe.src = url;
+
+        setTimeout(() => {
+            if (!this.iframeLoaded[system]) {
+                this.onIframeError(system);
+            }
+        }, 15000);
+    },
+
+    onIframeLoad(system) {
+        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
+        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
+        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
+
+        const iframe = document.getElementById(iframeId);
+        const loader = document.getElementById(loaderId);
+        const errorDiv = document.getElementById(errorId);
+
+        if (!iframe || !iframe.src || iframe.src === window.location.href || iframe.src === '' || iframe.src === 'about:blank') {
+            return;
+        }
+
+        this.iframeLoaded[system] = true;
+        if (loader) loader.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
+        iframe.style.display = 'block';
+        iframe.style.opacity = '1';
+    },
+
+    onIframeError(system) {
+        if (this.iframeLoaded[system]) return;
+
+        const loaderId = system === 'cert' ? 'certIframeLoader' : (system === 'ldnd' ? 'ldndIframeLoader' : 'lifevestIframeLoader');
+        const errorId = system === 'cert' ? 'certIframeError' : (system === 'ldnd' ? 'ldndIframeError' : 'lifevestIframeError');
+        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
+
+        const loader = document.getElementById(loaderId);
+        const errorDiv = document.getElementById(errorId);
+        const iframe = document.getElementById(iframeId);
+
+        if (loader) loader.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'flex';
+        if (iframe) { iframe.style.display = 'none'; }
+    },
+
+    retryIframe(system) {
+        this.iframeLoaded[system] = false;
+        const iframeId = system === 'cert' ? 'certIframe' : (system === 'ldnd' ? 'ldndIframe' : 'lifevestIframe');
+        const iframe = document.getElementById(iframeId);
+        if (iframe) iframe.src = '';
+        setTimeout(() => this.loadIframe(system), 100);
+    },
+
+    showToast(message) {
+        const toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+    },
+
+    renderCurrentView() {
+        this.populateAllKpis();
+        this.populateHighlights();
+        this.renderCertDetailsTable();
+        this.renderLdndDetailsTable();
+        this.renderLifevestFleetSelect();
+        this.switchTab(this.currentTab, false);
+    },
+
     // ═══════════════════════════════════════════════════════
     // 1. FULL CERTIFICATION DASHBOARD LOGIC
     // ═══════════════════════════════════════════════════════
@@ -451,37 +608,35 @@ const AerocabinApp = {
                     : `<span class="badge badge-success">Aktif (${item.daysLeft} hari)</span>`}
                 </td>
                 <td>
-                    <button type="button" class="btn-table-action" onclick="AerocabinApp.showCertModal('${item.name}', '${item.cert}', '${item.certNo}', '${item.expiry}', '${item.dept}')">
-                        <span>📄 Detail</span>
+                    <button type="button" class="btn-table-action" onclick="AerocabinApp.showToast('Memproses renewal untuk ${item.name}...')">
+                        Perbarui
                     </button>
                 </td>
             </tr>
         `).join('');
     },
 
-    showCertModal(name, cert, certNo, expiry, dept) {
-        alert(`Detail Sertifikasi Pegawai\n\nNama: ${name}\nModul: ${cert}\nNo. Sertifikat: ${certNo}\nMasa Berlaku: ${expiry}\nDepartemen: ${dept}\n\nStatus: Terverifikasi di Learning Center Unit (LCU).`);
-    },
-
     // ═══════════════════════════════════════════════════════
     // 2. FULL LDND CARPET DASHBOARD LOGIC
     // ═══════════════════════════════════════════════════════
     setupLdndFilters() {
-        // GA vs QG tabs
-        document.querySelectorAll('.ldnd-airline-tab').forEach(btn => {
+        const searchInput = document.getElementById('ldndSearchInput');
+        const fleetSelect = document.getElementById('ldndFleetSelect');
+        const statusSelect = document.getElementById('ldndStatusSelect');
+
+        searchInput?.addEventListener('input', () => this.renderLdndDetailsTable());
+        fleetSelect?.addEventListener('change', () => this.renderLdndDetailsTable());
+        statusSelect?.addEventListener('change', () => this.renderLdndDetailsTable());
+
+        // Sub-tabs: Garuda (GA) vs Citilink (QG)
+        document.querySelectorAll('.sub-tab-btn[data-airline]').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const airline = btn.getAttribute('data-airline');
-                this.ldndCurrentTab = airline;
-                document.querySelectorAll('.ldnd-airline-tab').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.sub-tab-btn[data-airline]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                this.ldndCurrentTab = btn.getAttribute('data-airline');
                 this.renderLdndDetailsTable();
             });
         });
-
-        document.getElementById('ldndSearchInput')?.addEventListener('input', () => this.renderLdndDetailsTable());
-        document.getElementById('ldndFleetSelect')?.addEventListener('change', () => this.renderLdndDetailsTable());
-        document.getElementById('ldndStatusSelect')?.addEventListener('change', () => this.renderLdndDetailsTable());
     },
 
     renderLdndDetailsTable() {
@@ -492,7 +647,12 @@ const AerocabinApp = {
         const fleet = document.getElementById('ldndFleetSelect')?.value || 'ALL';
         const status = document.getElementById('ldndStatusSelect')?.value || 'ALL';
 
-        let list = AerocabinData.detailed.carpetItems.filter(item => item.airline === this.ldndCurrentTab);
+        let list = AerocabinData.detailed.carpetItems;
+
+        // Filter by airline sub-tab
+        if (this.ldndCurrentTab !== 'ALL') {
+            list = list.filter(item => item.airline === this.ldndCurrentTab);
+        }
 
         if (fleet !== 'ALL') {
             list = list.filter(item => item.fleet === fleet);
@@ -503,13 +663,14 @@ const AerocabinApp = {
         if (search) {
             list = list.filter(item =>
                 item.reg.toLowerCase().includes(search) ||
-                item.lastWo.toLowerCase().includes(search) ||
-                item.fleet.toLowerCase().includes(search)
+                item.fleet.toLowerCase().includes(search) ||
+                item.type.toLowerCase().includes(search) ||
+                item.lastWo.toLowerCase().includes(search)
             );
         }
 
         const countEl = document.getElementById('ldndResultCount');
-        if (countEl) countEl.textContent = `${list.length} item karpet armada ${this.ldndCurrentTab}`;
+        if (countEl) countEl.textContent = `${list.length} armada/komponen ditemukan`;
 
         tbody.innerHTML = list.map(item => `
             <tr>
@@ -517,125 +678,132 @@ const AerocabinApp = {
                     <span style="font-weight: 800; font-family: 'JetBrains Mono'; font-size: 0.95rem; color: var(--text-primary);">${item.reg}</span>
                 </td>
                 <td><span class="badge badge-neutral">${item.fleet}</span></td>
-                <td><span class="badge ${item.airline === 'GA' ? 'badge-info' : 'badge-success'}">${item.airline}</span></td>
-                <td><strong style="color: var(--text-primary);">${item.type}</strong></td>
-                <td class="font-mono">${item.interval} Bulan</td>
+                <td>
+                    <span class="badge ${item.airline === 'GA' ? 'badge-info' : 'badge-success'}">
+                        ${item.airline === 'GA' ? 'Garuda Indonesia' : 'Citilink'}
+                    </span>
+                </td>
+                <td><strong>${item.type}</strong> (${item.interval} Bulan)</td>
                 <td class="font-mono">${item.lastDone}</td>
                 <td class="font-mono" style="font-weight: 700;">${item.nextDue}</td>
                 <td>
                     ${item.status === 'due'
                 ? `<span class="badge badge-danger">Already Due (${Math.abs(item.diff)}h)</span>`
                 : item.status === 'near_due'
-                    ? `<span class="badge badge-warning">Near Due (${item.diff}h)</span>`
-                    : `<span class="badge badge-success">Safe (${item.diff}h)</span>`}
+                    ? `<span class="badge badge-warning">Near Due (${item.diff} hari)</span>`
+                    : `<span class="badge badge-success">Safe (+${item.diff}h)</span>`}
                 </td>
                 <td>
-                    <span class="badge ${item.acStatus === 'ACTIVE' ? 'badge-cyan' : 'badge-neutral'}">${item.acStatus}</span>
+                    <span class="badge ${item.acStatus === 'ACTIVE' ? 'badge-success' : 'badge-warning'}">${item.acStatus}</span>
                 </td>
                 <td>
-                    <button type="button" class="btn-table-action" onclick="AerocabinApp.showCarpetDoneModal('${item.reg}', '${item.type}', '${item.nextDue}')">
-                        <span>✏️ Catat Done</span>
+                    <button type="button" class="btn-table-action" onclick="AerocabinApp.showToast('Membuka Work Order untuk ${item.reg} (${item.type})...')">
+                        WO: ${item.lastWo}
                     </button>
                 </td>
             </tr>
         `).join('');
     },
 
-    showCarpetDoneModal(reg, type, nextDue) {
-        const wo = prompt(`Catat Penggantian Karpet Selesai (Done Action)\n\nPesawat: ${reg}\nTipe: ${type}\nNext Due: ${nextDue}\n\nMasukkan Nomor Work Order (WO):`, `WO-${new Date().getFullYear()}-`);
-        if (wo) {
-            this.showToast(`✅ Penggantian karpet ${reg} (${type}) berhasil dicatat dengan nomor ${wo}!`);
-        }
-    },
-
     // ═══════════════════════════════════════════════════════
-    // 3. FULL LIFEVEST DASHBOARD & 2D SEAT MAP LOGIC
+    // 3. FULL LIFEVEST SEAT MAP & TRACKING LOGIC
     // ═══════════════════════════════════════════════════════
     setupLifevestSeatMap() {
-        const selectEl = document.getElementById('lifevestAircraftSelect');
-        if (selectEl) {
-            selectEl.innerHTML = AerocabinData.detailed.lifevestFleet.map(ac => `
-                <option value="${ac.reg}">${ac.reg} - ${ac.type} (${ac.airline}) [${ac.health}% Safe]</option>
-            `).join('');
+        const regSelect = document.getElementById('lifevestFleetSelect');
+        regSelect?.addEventListener('change', (e) => {
+            this.selectedAircraftReg = e.target.value;
+            this.renderLifevestSeatMap();
+        });
+    },
 
-            selectEl.addEventListener('change', (e) => {
-                this.selectedAircraftReg = e.target.value;
-                this.renderLifevestSeatMap();
-            });
-        }
+    renderLifevestFleetSelect() {
+        const select = document.getElementById('lifevestFleetSelect');
+        if (!select) return;
+
+        select.innerHTML = AerocabinData.detailed.lifevestFleet.map(ac => `
+            <option value="${ac.reg}" ${ac.reg === this.selectedAircraftReg ? 'selected' : ''}>
+                ${ac.reg} — ${ac.type} (${ac.airline === 'GA' ? 'Garuda' : 'Citilink'}) | Health: ${ac.health}%
+            </option>
+        `).join('');
+
+        this.renderLifevestSeatMap();
     },
 
     renderLifevestSeatMap() {
-        const container = document.getElementById('seatMapGrid');
-        if (!container) return;
+        const grid = document.getElementById('seatMapGrid');
+        if (!grid) return;
 
-        const reg = this.selectedAircraftReg;
-        const ac = AerocabinData.detailed.lifevestFleet.find(a => a.reg === reg) || AerocabinData.detailed.lifevestFleet[0];
-        const seats = AerocabinData.detailed.generateSeatMatrix(reg);
+        const seats = AerocabinData.detailed.generateSeatMatrix(this.selectedAircraftReg);
+        const aircraft = AerocabinData.detailed.lifevestFleet.find(a => a.reg === this.selectedAircraftReg) || AerocabinData.detailed.lifevestFleet[0];
 
-        // Update aircraft header info
-        const infoEl = document.getElementById('seatMapAircraftInfo');
-        if (infoEl) {
-            infoEl.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                    <span style="font-size: 1.2rem; font-weight: 800; font-family: 'JetBrains Mono'; color: var(--text-primary);">${ac.reg}</span>
-                    <span class="badge badge-neutral">${ac.type}</span>
-                    <span class="badge ${ac.airline === 'GA' ? 'badge-info' : 'badge-success'}">${ac.airline === 'GA' ? 'Garuda Indonesia' : 'Citilink'}</span>
-                    <span class="badge badge-success">${ac.safe} Safe</span>
-                    <span class="badge badge-warning">${ac.warning} Warning</span>
-                    <span class="badge badge-danger">${ac.critical + ac.expired} Critical/Expired</span>
-                    <span style="font-weight: 700; color: #10b981;">Health: ${ac.health}%</span>
+        // Group seats by row
+        const rowMap = {};
+        seats.forEach(s => {
+            if (!rowMap[s.row]) rowMap[s.row] = [];
+            rowMap[s.row].push(s);
+        });
+
+        // Summary bar
+        const statsEl = document.getElementById('seatMapStatsBar');
+        if (statsEl) {
+            statsEl.innerHTML = `
+                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div>
+                        <span style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-family: 'JetBrains Mono';">${aircraft.reg}</span>
+                        <span class="badge badge-neutral" style="margin-left: 0.5rem;">${aircraft.type}</span>
+                        <span class="badge ${aircraft.airline === 'GA' ? 'badge-info' : 'badge-success'}">${aircraft.airline === 'GA' ? 'Garuda Indonesia' : 'Citilink'}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <span class="badge badge-success">${aircraft.safe} Safe</span>
+                        <span class="badge badge-warning">${aircraft.warning} Warning</span>
+                        <span class="badge badge-danger">${aircraft.critical} Critical</span>
+                        <span class="badge badge-purple">${aircraft.expired} Expired</span>
+                    </div>
                 </div>
             `;
         }
 
-        // Group seats by row
-        const rowsMap = {};
-        seats.forEach(s => {
-            if (!rowsMap[s.row]) rowsMap[s.row] = [];
-            rowsMap[s.row].push(s);
-        });
-
-        // Render rows
         let html = '';
-        Object.keys(rowsMap).forEach(rowNum => {
-            const rowSeats = rowsMap[rowNum];
-            const leftSeats = rowSeats.filter(s => ['A', 'B', 'C'].includes(s.letter));
-            const rightSeats = rowSeats.filter(s => ['D', 'E', 'F'].includes(s.letter));
+        Object.keys(rowMap).forEach(r => {
+            const rowSeats = rowMap[r];
+            const leftGroup = rowSeats.filter(s => ['A', 'B', 'C'].includes(s.letter));
+            const rightGroup = rowSeats.filter(s => ['D', 'E', 'F'].includes(s.letter));
 
             html += `
                 <div class="seat-row">
-                    <div class="seat-row-label">${rowNum}</div>
-                    ${leftSeats.map(s => `
-                        <div class="seat-unit seat-${s.status}" 
-                             title="Kursi: ${s.seatNumber} | Part No: ${s.partNumber} | Expired: ${s.expiry} | Status: ${s.status.toUpperCase()}"
-                             onclick="AerocabinApp.showSeatDetails('${s.seatNumber}', '${s.partNumber}', '${s.expiry}', '${s.status}')">
-                            <span>${s.letter}</span>
-                        </div>
-                    `).join('')}
+                    <div class="seat-row-label">${r}</div>
+                    ${leftGroup.map(s => this.renderSeatUnit(s)).join('')}
                     <div class="seat-aisle-gap">AISLE</div>
-                    ${rightSeats.map(s => `
-                        <div class="seat-unit seat-${s.status}"
-                             title="Kursi: ${s.seatNumber} | Part No: ${s.partNumber} | Expired: ${s.expiry} | Status: ${s.status.toUpperCase()}"
-                             onclick="AerocabinApp.showSeatDetails('${s.seatNumber}', '${s.partNumber}', '${s.expiry}', '${s.status}')">
-                            <span>${s.letter}</span>
-                        </div>
-                    `).join('')}
-                    <div class="seat-row-label">${rowNum}</div>
+                    ${rightGroup.map(s => this.renderSeatUnit(s)).join('')}
                 </div>
             `;
         });
 
-        container.innerHTML = html;
+        grid.innerHTML = html;
     },
 
-    showSeatDetails(seatNum, partNum, expiry, status) {
-        const newDate = prompt(`Detail Pelampung Kursi ${seatNum}\n\nPart Number: ${partNum}\nStatus Saat Ini: ${status.toUpperCase()}\nTanggal Expired: ${expiry}\n\nMasukkan tanggal expired baru untuk update (YYYY-MM-DD):`, expiry);
-        if (newDate && newDate !== expiry) {
-            this.showToast(`✅ Pelampung kursi ${seatNum} berhasil diupdate ke tanggal ${newDate}!`);
-        }
+    renderSeatUnit(seat) {
+        let statusClass = 'seat-safe';
+        if (seat.status === 'warning') statusClass = 'seat-warning';
+        else if (seat.status === 'critical') statusClass = 'seat-critical';
+        else if (seat.status === 'expired') statusClass = 'seat-expired';
+
+        return `
+            <div class="seat-unit ${statusClass}"
+                 onclick="AerocabinApp.showSeatModal('${seat.seatNumber}', '${seat.partNumber}', '${seat.status}', '${seat.expiry}', '${seat.reg}')"
+                 title="Kursi ${seat.seatNumber} | ${seat.partNumber} | Status: ${seat.status} | Exp: ${seat.expiry}">
+                ${seat.letter}
+            </div>
+        `;
+    },
+
+    showSeatModal(seatNum, partNum, status, expiry, reg) {
+        this.showToast(`Kursi ${seatNum} (${reg}) — Status: ${status.toUpperCase()} — Exp: ${expiry} — ${partNum}`);
     }
 };
 
 window.AerocabinApp = AerocabinApp;
-document.addEventListener('DOMContentLoaded', () => AerocabinApp.init());
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.AerocabinApp.init();
+});

@@ -1,7 +1,7 @@
 /**
  * Aerocabin Charts Controller
  * Handles Chart.js rendering for Certification, LDND, and Lifevest overviews.
- * Dynamically re-renders on theme toggle (Dark / Light) and responsive resize.
+ * Dynamically re-renders on theme toggle (Dark / Light), data synchronization, and resize.
  */
 
 const AerocabinCharts = {
@@ -98,12 +98,13 @@ const AerocabinCharts = {
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
                             bodyFont: { family: 'JetBrains Mono' }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: theme.mutedColor, font: { family: 'Plus Jakarta Sans', size: 11 } },
+                            ticks: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } },
                             grid: { display: false }
                         },
                         y: {
@@ -122,7 +123,7 @@ const AerocabinCharts = {
         const data = AerocabinData.ldnd;
         const theme = this.getThemeColors();
 
-        // Donut: Carpet Status
+        // Donut: Distribution
         const ctxDist = document.getElementById('ldndDistributionChart')?.getContext('2d');
         if (ctxDist) {
             this.destroyChart('ldndDist');
@@ -152,7 +153,7 @@ const AerocabinCharts = {
             });
         }
 
-        // Stacked Bar: Carpet per Fleet
+        // Stacked Bar: per Fleet
         const ctxFleet = document.getElementById('ldndFleetChart')?.getContext('2d');
         if (ctxFleet) {
             this.destroyChart('ldndFleet');
@@ -162,21 +163,21 @@ const AerocabinCharts = {
                     labels: data.chartFleet.labels,
                     datasets: [
                         {
-                            label: 'Already Due',
-                            data: data.chartFleet.alreadyDue,
-                            backgroundColor: 'rgba(244, 63, 94, 0.85)',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Near Due (≤14d)',
-                            data: data.chartFleet.nearDue,
-                            backgroundColor: 'rgba(245, 158, 11, 0.85)',
-                            borderRadius: 4
-                        },
-                        {
                             label: 'Safe',
                             data: data.chartFleet.safe,
-                            backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Near Due',
+                            data: data.chartFleet.nearDue,
+                            backgroundColor: '#f59e0b',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Already Due',
+                            data: data.chartFleet.alreadyDue,
+                            backgroundColor: '#f43f5e',
                             borderRadius: 4
                         }
                     ]
@@ -184,22 +185,22 @@ const AerocabinCharts = {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
-                        }
-                    },
                     scales: {
                         x: {
                             stacked: true,
-                            ticks: { color: theme.mutedColor, font: { family: 'Plus Jakarta Sans', size: 11 } },
+                            ticks: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } },
                             grid: { display: false }
                         },
                         y: {
                             stacked: true,
                             ticks: { color: theme.mutedColor, font: { family: 'JetBrains Mono', size: 11 } },
                             grid: { color: theme.gridColor }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }, padding: 12 }
                         }
                     }
                 }
@@ -213,7 +214,7 @@ const AerocabinCharts = {
         const data = AerocabinData.lifevest;
         const theme = this.getThemeColors();
 
-        // Donut: Safety Health Status
+        // Donut: Distribution
         const ctxDist = document.getElementById('lifevestDistributionChart')?.getContext('2d');
         if (ctxDist) {
             this.destroyChart('lifevestDist');
@@ -278,6 +279,11 @@ const AerocabinCharts = {
         const theme = this.getThemeColors();
         const ctxHealth = document.getElementById('globalHealthChart')?.getContext('2d');
         if (ctxHealth) {
+            const certRate = AerocabinData.certification?.stats?.avgAchievement || 91.4;
+            const ldndTotal = (AerocabinData.ldnd?.stats?.safeCount || 131) + (AerocabinData.ldnd?.stats?.nearDue || 23) + (AerocabinData.ldnd?.stats?.alreadyDue || 14);
+            const ldndRate = ldndTotal > 0 ? Math.round(((AerocabinData.ldnd?.stats?.safeCount || 131) / ldndTotal) * 1000) / 10 : 78.0;
+            const lifevestRate = AerocabinData.lifevest?.stats?.healthRate || 94.2;
+
             this.destroyChart('globalHealth');
             this.instances['globalHealth'] = new Chart(ctxHealth, {
                 type: 'bar',
@@ -286,7 +292,7 @@ const AerocabinCharts = {
                     datasets: [
                         {
                             label: 'Kepatuhan / Safe Health (%)',
-                            data: [91.4, 78.0, 94.2],
+                            data: [certRate, ldndRate, lifevestRate],
                             backgroundColor: ['#38bdf8', '#10b981', '#06b6d4'],
                             borderRadius: 8,
                             barThickness: 36
@@ -325,13 +331,17 @@ const AerocabinCharts = {
         }
     },
 
-    // Handle Theme Change
+    // Handle Theme Change or Data Update
     updateTheme() {
         const activeTab = window.AerocabinApp?.currentTab || 'global';
         if (activeTab === 'global') this.renderGlobalCharts();
         else if (activeTab === 'certification') this.renderCertificationCharts();
         else if (activeTab === 'ldnd') this.renderLdndCharts();
         else if (activeTab === 'lifevest') this.renderLifevestCharts();
+    },
+
+    refreshActiveChart() {
+        this.updateTheme();
     }
 };
 
