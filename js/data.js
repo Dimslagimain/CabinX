@@ -9,9 +9,9 @@
 const AerocabinData = {
     // Project URLs are configured in source code only.
     urls: {
-        certification: 'https://certification-dashboard-production.up.railway.app/',
+        certification: 'https://certification-dashboard-production-ed6d.up.railway.app/',
         ldnd: 'https://ldnd-flax.vercel.app/',
-        lifevest: 'https://lifevest-monitoring-production-48fa.up.railway.app/',
+        lifevest: 'https://lifevest-monitoring-production.up.railway.app/',
     },
 
     getUrl(system) {
