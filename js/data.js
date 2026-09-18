@@ -7,6 +7,9 @@
  */
 
 const AerocabinData = {
+    STORAGE_KEY: 'cabinx_master_data_cache_v2',
+    URLS_STORAGE_KEY: 'cabinx_custom_urls_v2',
+
     // Official Dashboard URLs
     urls: {
         certification: 'https://certification-dashboard-production-ed6d.up.railway.app/login',
@@ -40,6 +43,79 @@ const AerocabinData = {
         if (url && url !== '#') {
             window.open(url, '_blank', 'noopener,noreferrer');
         }
+    },
+
+    saveToStorage() {
+        try {
+            const payload = {
+                version: '2.0',
+                savedAt: new Date().toISOString(),
+                urls: this.urls,
+                certification: this.certification,
+                ldnd: this.ldnd,
+                lifevest: this.lifevest,
+                syncState: {
+                    status: this.syncState.status,
+                    lastSynced: this.syncState.lastSynced ? this.syncState.lastSynced.toISOString() : new Date().toISOString(),
+                    sources: this.syncState.sources
+                }
+            };
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(payload));
+        } catch (err) {
+            console.warn('[CabinX Cache] Gagal menyimpan ke localStorage:', err);
+        }
+    },
+
+    loadFromStorage() {
+        try {
+            this.loadSavedUrls();
+            const raw = localStorage.getItem(this.STORAGE_KEY);
+            if (!raw) return false;
+
+            const cache = JSON.parse(raw);
+            if (!cache || typeof cache !== 'object') return false;
+
+            if (cache.certification && cache.certification.stats) {
+                this.certification = Object.assign({}, this.certification, cache.certification);
+            }
+            if (cache.ldnd && cache.ldnd.stats) {
+                this.ldnd = Object.assign({}, this.ldnd, cache.ldnd);
+            }
+            if (cache.lifevest && cache.lifevest.stats) {
+                this.lifevest = Object.assign({}, this.lifevest, cache.lifevest);
+            }
+            if (cache.syncState) {
+                if (cache.syncState.lastSynced) {
+                    this.syncState.lastSynced = new Date(cache.syncState.lastSynced);
+                }
+                if (cache.syncState.sources) {
+                    this.syncState.sources = Object.assign({}, this.syncState.sources, cache.syncState.sources);
+                }
+            }
+            console.log('[CabinX Cache] Data cache terbaru berhasil dimuat dari localStorage.');
+            return true;
+        } catch (err) {
+            console.warn('[CabinX Cache] Gagal membaca dari localStorage:', err);
+            return false;
+        }
+    },
+
+    saveCustomUrls() {
+        try {
+            localStorage.setItem(this.URLS_STORAGE_KEY, JSON.stringify(this.urls));
+        } catch (e) {}
+    },
+
+    loadSavedUrls() {
+        try {
+            const raw = localStorage.getItem(this.URLS_STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    this.urls = Object.assign({}, this.urls, parsed);
+                }
+            }
+        } catch (e) {}
     },
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -122,7 +198,9 @@ const AerocabinData = {
 
     // ═════════════════════════════════════════════════════════════════════════
     // 3. LIFEVEST MONITORING DATA (Life Vest Tracker)
-    // Real Production Baseline for Cabin Safety Equipment
+    // ═════════════════════════════════════════════════════════════════════════
+    // 3. LIFEVEST MONITORING DATA (Life Vest Tracker)
+    // Real Production Baseline for Cabin Safety Equipment (Synced with Railway DB)
     // ═════════════════════════════════════════════════════════════════════════
     lifevest: {
         title: "Life Vest Tracker",
@@ -132,31 +210,31 @@ const AerocabinData = {
         theme: "lifevest",
         targetUrl: "https://lifevest-monitoring-production.up.railway.app/login",
         stats: {
-            totalVests: 14280,
-            healthRate: 94.2,
-            safeCount: 13450,
-            warningCount: 520,
-            criticalCount: 210,
-            expiredCount: 100,
+            totalVests: 30782,
+            healthRate: 85.7,
+            safeCount: 26370,
+            warningCount: 3,
+            criticalCount: 492,
+            expiredCount: 3917,
             forecastWeekly: 42,
             forecastMonthly: 210
         },
         chartDistribution: {
-            labels: ['Safe (>60 Hari)', 'Warning (30-60 Hari)', 'Critical (<30 Hari)', 'Expired'],
-            data: [13450, 520, 210, 100],
+            labels: ['Safe (>6 Bulan)', 'Warning (3-6 Bulan)', 'Critical (<3 Bulan)', 'Expired'],
+            data: [26370, 3, 492, 3917],
             colors: ['#10b981', '#f59e0b', '#f43f5e', '#8b5cf6']
         },
         chartPartNumbers: {
-            labels: ['Adult Life Vest', 'Crew Life Vest', 'Infant Life Vest'],
-            data: [12400, 1180, 700],
-            colors: ['#06b6d4', '#3b82f6', '#ec4899']
+            labels: ['Business', 'Economy', 'Cockpit', 'Attendant', 'Spare Pax', 'Spare Infant', 'First Class', 'Premium Economy'],
+            data: [1556, 17283, 434, 603, 5018, 5776, 16, 96],
+            colors: ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#14b8a6']
         },
         highlights: [
-            { reg: "PK-GNA", type: "B737-800", airline: "GA", totalSeats: 162, critical: 8, expired: 3, health: 93, status: "danger" },
-            { reg: "PK-GLA", type: "A320-200", airline: "QG", totalSeats: 180, critical: 12, expired: 0, health: 93, status: "warning" },
-            { reg: "PK-GPD", type: "A330-300", airline: "GA", totalSeats: 287, critical: 15, expired: 1, health: 94, status: "danger" },
-            { reg: "PK-GIH", fleet: "B777-300ER", airline: "GA", totalSeats: 393, critical: 14, expired: 0, health: 96, status: "warning" },
-            { reg: "PK-GQG", fleet: "A320-200", airline: "QG", totalSeats: 180, critical: 6, expired: 0, health: 97, status: "warning" }
+            { reg: "PK-GFD", type: "B737-800", airline: "GA", totalSeats: 179, critical: 0, expired: 176, health: 0, status: "danger" },
+            { reg: "PK-GFG", type: "B737-800", airline: "GA", totalSeats: 180, critical: 0, expired: 180, health: 0, status: "danger" },
+            { reg: "PK-GFI", type: "B737-800", airline: "GA", totalSeats: 180, critical: 0, expired: 180, health: 0, status: "danger" },
+            { reg: "PK-GFM", type: "B737-800", airline: "GA", totalSeats: 175, critical: 0, expired: 175, health: 0, status: "danger" },
+            { reg: "PK-GFP", type: "B737-800", airline: "GA", totalSeats: 179, critical: 0, expired: 179, health: 0, status: "danger" }
         ]
     },
 
@@ -189,13 +267,13 @@ const AerocabinData = {
 
         // 3. Full Lifevest Fleet & 2D Seat Matrix
         lifevestFleet: [
+            { reg: "PK-GFD", type: "B737-800", airline: "GA", seatsCount: 179, safe: 3, warning: 0, critical: 0, expired: 176, health: 0 },
+            { reg: "PK-GFG", type: "B737-800", airline: "GA", seatsCount: 180, safe: 0, warning: 0, critical: 0, expired: 180, health: 0 },
+            { reg: "PK-GFI", type: "B737-800", airline: "GA", seatsCount: 180, safe: 0, warning: 0, critical: 0, expired: 180, health: 0 },
+            { reg: "PK-GFM", type: "B737-800", airline: "GA", seatsCount: 175, safe: 0, warning: 0, critical: 0, expired: 175, health: 0 },
+            { reg: "PK-GFP", type: "B737-800", airline: "GA", seatsCount: 179, safe: 0, warning: 0, critical: 0, expired: 179, health: 0 },
             { reg: "PK-GNA", type: "B737-800", airline: "GA", seatsCount: 162, safe: 151, warning: 8, critical: 2, expired: 1, health: 93 },
-            { reg: "PK-GLA", type: "A320-200", airline: "QG", seatsCount: 180, safe: 168, warning: 10, critical: 2, expired: 0, health: 93 },
-            { reg: "PK-GPD", type: "A330-300", airline: "GA", seatsCount: 287, safe: 271, warning: 11, critical: 4, expired: 1, health: 94 },
-            { reg: "PK-GIH", type: "B777-300ER", airline: "GA", seatsCount: 393, safe: 377, warning: 12, critical: 4, expired: 0, health: 96 },
-            { reg: "PK-GQG", type: "A320-200", airline: "QG", seatsCount: 180, safe: 174, warning: 5, critical: 1, expired: 0, health: 97 },
-            { reg: "PK-GFF", type: "B737-800", airline: "GA", seatsCount: 162, safe: 155, warning: 5, critical: 2, expired: 0, health: 96 },
-            { reg: "PK-GLW", type: "A320-200", airline: "QG", seatsCount: 180, safe: 165, warning: 12, critical: 3, expired: 0, health: 92 }
+            { reg: "PK-GLA", type: "A320-200", airline: "QG", seatsCount: 180, safe: 168, warning: 10, critical: 2, expired: 0, health: 93 }
         ],
 
         // Generated Seat Matrix for B737/A320 layout
@@ -276,26 +354,30 @@ const AerocabinData = {
 
             let liveData = null;
 
-            // ── Unified /api/overview endpoint + Localhost & Legacy Fallbacks ──
+            // ── Unified /api/overview endpoint + CORS proxy & Localhost Fallbacks ──
             const overviewEndpoints = {
                 ldnd: [
                     `${this.urls.ldndBase}/api/overview`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(this.urls.ldndBase + '/api/overview')}`,
                     `${this.urls.ldndBase}/api/dashboard`,
                     'http://localhost:3000/api/overview',
                     'http://localhost:3000/api/dashboard',
                 ],
                 certification: [
                     `${this.urls.certificationBase}/api/overview`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(this.urls.certificationBase + '/api/overview')}`,
                     'http://localhost:8000/api/overview',
                     'http://127.0.0.1:8000/api/overview',
                 ],
                 cert: [
                     `${this.urls.certificationBase}/api/overview`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(this.urls.certificationBase + '/api/overview')}`,
                     'http://localhost:8000/api/overview',
                     'http://127.0.0.1:8000/api/overview',
                 ],
                 lifevest: [
                     `${this.urls.lifevestBase}/api/overview`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(this.urls.lifevestBase + '/api/overview')}`,
                     'http://localhost:8001/api/overview',
                     'http://127.0.0.1:8001/api/overview',
                     'http://localhost:8000/api/overview',
@@ -306,12 +388,19 @@ const AerocabinData = {
 
             for (const ep of endpoints) {
                 try {
-                    const res = await fetchWithTimeout(ep, 5000);
+                    const res = await fetchWithTimeout(ep, 6000);
                     if (res && res.ok) {
-                        const json = await res.json();
+                        let text = await res.text();
+                        let json = null;
+                        try {
+                            json = JSON.parse(text);
+                        } catch (parseErr) {
+                            // in case of wrapped JSON string
+                            continue;
+                        }
                         // Accept both wrapped {success, data} and raw payload
                         const payload = (json && json.success === true && json.data) ? json.data : json;
-                        if (payload && typeof payload === 'object') {
+                        if (payload && typeof payload === 'object' && (payload.stats || payload.chartDistribution || payload.totalVests || payload.totalEmployees || payload.totalAircraft)) {
                             liveData = payload;
                             console.log(`[CabinX Sync] Successfully fetched live data for ${system} from ${ep}`);
                             break;
@@ -430,16 +519,36 @@ const AerocabinData = {
                 this.lifevest.stats.criticalCount,
                 this.lifevest.stats.expiredCount
             ];
+            this.lifevest.chartDistribution.labels = ['Safe (>6 Bulan)', 'Warning (3-6 Bulan)', 'Critical (<3 Bulan)', 'Expired'];
 
             if (payload.chartPartNumbers) {
-                if (payload.chartPartNumbers.labels) this.lifevest.chartPartNumbers.labels = payload.chartPartNumbers.labels;
-                if (payload.chartPartNumbers.data)   this.lifevest.chartPartNumbers.data   = payload.chartPartNumbers.data;
+                const pnLabels = payload.chartPartNumbers.labels || [];
+                const pnData = payload.chartPartNumbers.data || [];
+                const labelMap = {
+                    'business': 'Business',
+                    'economy': 'Economy',
+                    'cockpit': 'Cockpit',
+                    'attendant': 'Attendant',
+                    'spare-pax': 'Spare Pax',
+                    'spare-inf': 'Spare Infant',
+                    'first': 'First Class',
+                    'economy_premium': 'Premium Economy'
+                };
+                const cleanLabels = pnLabels.map(l => labelMap[String(l).toLowerCase()] || l);
+                const palette = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#14b8a6'];
+                
+                this.lifevest.chartPartNumbers.labels = cleanLabels;
+                this.lifevest.chartPartNumbers.data = pnData;
+                this.lifevest.chartPartNumbers.colors = palette.slice(0, cleanLabels.length);
             }
 
             if (Array.isArray(payload.highlights) && payload.highlights.length > 0) {
                 this.lifevest.highlights = payload.highlights;
             }
         }
+
+        // Persist fresh data instantly to localStorage
+        this.saveToStorage();
     },
 
     /**
@@ -494,6 +603,9 @@ const AerocabinData = {
         this.syncState.status = 'synced';
         this.syncState.lastSynced = new Date();
 
+        // Persist newly synchronized state
+        this.saveToStorage();
+
         // Dispatch sync event for reactive UI listeners
         const event = new CustomEvent('aerocabin:data-synced', {
             detail: {
@@ -506,5 +618,8 @@ const AerocabinData = {
         return results;
     }
 };
+
+// Immediately restore cached dataset upon script load
+AerocabinData.loadFromStorage();
 
 window.AerocabinData = AerocabinData;

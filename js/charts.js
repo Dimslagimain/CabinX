@@ -282,7 +282,7 @@ const AerocabinCharts = {
             const certRate = AerocabinData.certification?.stats?.avgAchievement || 91.4;
             const ldndTotal = (AerocabinData.ldnd?.stats?.safeCount || 131) + (AerocabinData.ldnd?.stats?.nearDue || 23) + (AerocabinData.ldnd?.stats?.alreadyDue || 14);
             const ldndRate = ldndTotal > 0 ? Math.round(((AerocabinData.ldnd?.stats?.safeCount || 131) / ldndTotal) * 1000) / 10 : 78.0;
-            const lifevestRate = AerocabinData.lifevest?.stats?.healthRate || 94.2;
+            const lifevestRate = AerocabinData.lifevest?.stats?.healthRate || 85.7;
 
             this.destroyChart('globalHealth');
             this.instances['globalHealth'] = new Chart(ctxHealth, {

@@ -16,6 +16,9 @@ const AerocabinApp = {
     selectedAircraftReg: 'PK-GNA',
 
     init() {
+        // 1. Ensure latest persisted datasets are loaded first from localStorage
+        AerocabinData.loadFromStorage();
+
         this.setupTheme();
         this.setupClock();
         this.setupNavigation();
@@ -27,6 +30,7 @@ const AerocabinApp = {
         this.setupLifevestSeatMap();
         this.populateAllKpis();
         this.populateHighlights();
+        this.updateSyncUI();
         this.renderCurrentView();
 
         // Listen for live data updates
@@ -39,10 +43,10 @@ const AerocabinApp = {
             this.updateSyncUI();
         });
 
-        // Trigger initial live sync from configured URLs
+        // Trigger background live sync to refresh if newer server data exists
         setTimeout(() => {
             AerocabinData.syncAll();
-        }, 300);
+        }, 250);
 
         // Listen for browser popstate or hash change
         window.addEventListener('hashchange', () => {
@@ -250,16 +254,28 @@ const AerocabinApp = {
 
     updateSyncUI() {
         const syncInfo = document.getElementById('syncTimeInfo');
-        if (syncInfo && AerocabinData.syncState.lastSynced) {
-            const timeStr = AerocabinData.syncState.lastSynced.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            syncInfo.textContent = `Tersinkron: ${timeStr} WIB`;
+        const heroBadge = document.getElementById('globalLastSyncedBadge');
+
+        if (AerocabinData.syncState.lastSynced) {
+            const d = new Date(AerocabinData.syncState.lastSynced);
+            const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            const label = `Synced: ${dateStr}, ${timeStr} WIB`;
+
+            if (syncInfo) {
+                syncInfo.textContent = label;
+                syncInfo.style.display = 'inline-flex';
+            }
+            if (heroBadge) {
+                heroBadge.textContent = `● Data Aktif: ${dateStr} ${timeStr} WIB`;
+            }
         }
     },
 
     // --- DYNAMIC KPI POPULATOR ---
     populateAllKpis() {
         // Format helpers
-        const num = (n) => Number(n).toLocaleString('id-ID');
+        const num = (n) => Number(n || 0).toLocaleString('id-ID');
 
         // 1. Global Showcase Cards
         const gCert = AerocabinData.certification.stats;
@@ -278,8 +294,10 @@ const AerocabinApp = {
 
         this.setElText('globalLifevestTotal', num(gLife.totalVests));
         this.setElText('globalLifevestHealth', `${gLife.healthRate}%`);
+        this.setElText('globalLifevestSafe', num(gLife.safeCount));
         this.setElText('globalLifevestWarning', num(gLife.warningCount));
         this.setElText('globalLifevestCritical', num(gLife.criticalCount));
+        this.setElText('globalLifevestExpired', num(gLife.expiredCount));
 
         // 2. Certification Overview KPIs
         this.setElText('kpiCertEmployees', num(gCert.totalEmployees));
@@ -296,11 +314,13 @@ const AerocabinApp = {
             rawMatEl.innerHTML = `GA: ${num(gLdnd.rawmatGA)} <span style="font-size: 0.8rem; color: var(--text-muted);">YD</span>`;
         }
 
-        // 4. Lifevest Overview KPIs
+        // 4. Lifevest Overview KPIs (5 Cards System Synced with Live Database)
         this.setElText('kpiLifevestTotal', num(gLife.totalVests));
-        this.setElText('kpiLifevestHealth', `${gLife.healthRate}%`);
+        this.setElText('kpiLifevestSafe', num(gLife.safeCount));
         this.setElText('kpiLifevestWarning', num(gLife.warningCount));
         this.setElText('kpiLifevestCritical', num(gLife.criticalCount));
+        this.setElText('kpiLifevestExpired', num(gLife.expiredCount));
+        this.setElText('kpiLifevestHealthSub', `Health: ${gLife.healthRate}% (${num(gLife.safeCount)} Safe)`);
     },
 
     setElText(id, text) {
@@ -358,14 +378,17 @@ const AerocabinApp = {
         // Lifevest Overview Highlights
         const lifevestTbody = document.getElementById('lifevestHighlightsBody');
         if (lifevestTbody) {
-            lifevestTbody.innerHTML = AerocabinData.lifevest.highlights.map(item => `
+            lifevestTbody.innerHTML = AerocabinData.lifevest.highlights.map(item => {
+                const isGA = item.airline === 'GA' || item.airline === 'Garuda' || item.airline === 'Garuda Indonesia';
+                const airlineName = isGA ? 'Garuda Indonesia' : (item.airline || 'Citilink');
+                return `
                 <tr>
                     <td>
                         <span style="font-weight: 800; font-family: 'JetBrains Mono'; font-size: 0.92rem; color: var(--text-primary);">${item.reg}</span>
                     </td>
-                    <td><span class="badge badge-neutral">${item.type || item.fleet}</span></td>
+                    <td><span class="badge badge-neutral">${item.type || item.fleet || 'B737-800'}</span></td>
                     <td>
-                        <span class="badge ${item.airline === 'GA' ? 'badge-info' : 'badge-success'}">${item.airline === 'GA' ? 'Garuda' : 'Citilink'}</span>
+                        <span class="badge ${isGA ? 'badge-info' : 'badge-success'}">${airlineName}</span>
                     </td>
                     <td class="font-mono">${item.totalSeats} seats</td>
                     <td>
@@ -379,13 +402,14 @@ const AerocabinApp = {
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <div style="flex: 1; height: 6px; background: var(--bg-card-elevated); border-radius: 3px; overflow: hidden; min-width: 60px;">
-                                <div style="width: ${item.health}%; height: 100%; background: ${item.health > 95 ? '#10b981' : '#f59e0b'};"></div>
+                                <div style="width: ${item.health}%; height: 100%; background: ${item.health >= 90 ? '#10b981' : (item.health > 0 ? '#f59e0b' : '#f43f5e')};"></div>
                             </div>
                             <span class="font-mono" style="font-size: 0.8rem; font-weight: 700;">${item.health}%</span>
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
     },
 
@@ -434,6 +458,7 @@ const AerocabinApp = {
                 AerocabinData.urls.lifevestBase = inputLife.value.replace(/\/login\/?$/, '').replace(/\/$/, '');
             }
 
+            AerocabinData.saveCustomUrls();
             closeModal();
             this.showToast('URL target berhasil diperbarui & menyinkronkan...');
             AerocabinData.syncAll();

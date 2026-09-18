@@ -91,6 +91,7 @@
                         <span id="syncDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px #10b981;"></span>
                         <span id="syncBtnText">Live Sync</span>
                     </button>
+                    <span id="syncTimeInfo" style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; display: none; align-items: center;"></span>
 
                     <div class="navbar-time" id="navbarClock">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -184,6 +185,7 @@
                             <div class="module-meta-badges">
                                 <span class="badge badge-purple">Aerocabin Command Hub</span>
                                 <span class="badge badge-success">● Seluruh Engine Beroperasi Normal</span>
+                                <span class="badge badge-cyan" id="globalLastSyncedBadge">● Sinkronisasi Otomatis Aktif</span>
                             </div>
                             <h1 class="module-hero-title">
                                 <span><i class="simple-icon simple-icon-global" aria-hidden="true"></i></span> Aerocabin Integrated Overview
@@ -309,20 +311,20 @@
                                 </p>
                                 <div class="project-stat-strip">
                                     <div class="project-stat-item">
-                                        <span class="project-stat-val" id="globalLifevestTotal">14,280</span>
+                                        <span class="project-stat-val" id="globalLifevestTotal">30,782</span>
                                         <span class="project-stat-lbl">Total Pelampung</span>
                                     </div>
                                     <div class="project-stat-item">
-                                        <span class="project-stat-val" id="globalLifevestHealth" style="color: #06b6d4;">94.2%</span>
-                                        <span class="project-stat-lbl">Safe Health</span>
+                                        <span class="project-stat-val" id="globalLifevestSafe" style="color: #10b981;">26,370</span>
+                                        <span class="project-stat-lbl">Safe (>6 bln)</span>
                                     </div>
                                     <div class="project-stat-item">
-                                        <span class="project-stat-val" id="globalLifevestWarning" style="color: #f59e0b;">520</span>
-                                        <span class="project-stat-lbl">Warning</span>
+                                        <span class="project-stat-val" id="globalLifevestCritical" style="color: #f43f5e;">492</span>
+                                        <span class="project-stat-lbl">Critical (<3 bln)</span>
                                     </div>
                                     <div class="project-stat-item">
-                                        <span class="project-stat-val" id="globalLifevestCritical" style="color: #f43f5e;">210</span>
-                                        <span class="project-stat-lbl">Critical</span>
+                                        <span class="project-stat-val" id="globalLifevestExpired" style="color: #8b5cf6;">3,917</span>
+                                        <span class="project-stat-lbl">Expired</span>
                                     </div>
                                 </div>
                             </div>
@@ -639,35 +641,44 @@
                                 <span class="kpi-label">Total Pelampung</span>
                                 <div class="kpi-icon-wrap"><i class="simple-icon simple-icon-lifevest" aria-hidden="true"></i></div>
                             </div>
-                            <div class="kpi-value" id="kpiLifevestTotal">14,280</div>
-                            <div class="kpi-subtext">Tersebar di seluruh kursi armada</div>
+                            <div class="kpi-value" id="kpiLifevestTotal">30,782</div>
+                            <div class="kpi-subtext" id="kpiLifevestHealthSub">Fleet Safety Health: 85.7% (26.370 Safe)</div>
                         </div>
 
                         <div class="kpi-card kpi-accent-emerald">
                             <div class="kpi-card-top">
-                                <span class="kpi-label">Fleet Safety Health</span>
+                                <span class="kpi-label">Safe (>6 Bulan)</span>
                                 <div class="kpi-icon-wrap"><i class="simple-icon simple-icon-shield" aria-hidden="true"></i></div>
                             </div>
-                            <div class="kpi-value" id="kpiLifevestHealth" style="color: #10b981;">94.2%</div>
-                            <div class="kpi-subtext">13.450 kursi berstatus Safe</div>
+                            <div class="kpi-value" id="kpiLifevestSafe" style="color: #10b981;">26,370</div>
+                            <div class="kpi-subtext">Masa berlaku aman (>6 bulan)</div>
                         </div>
 
                         <div class="kpi-card kpi-accent-amber">
                             <div class="kpi-card-top">
-                                <span class="kpi-label">Warning</span>
+                                <span class="kpi-label">Warning (3-6 Bulan)</span>
+                                <div class="kpi-icon-wrap"><i class="simple-icon simple-icon-clock" aria-hidden="true"></i></div>
+                            </div>
+                            <div class="kpi-value" id="kpiLifevestWarning" style="color: #f59e0b;">3</div>
+                            <div class="kpi-subtext">Jatuh tempo 3 – 6 bulan</div>
+                        </div>
+
+                        <div class="kpi-card kpi-accent-rose">
+                            <div class="kpi-card-top">
+                                <span class="kpi-label">Critical (<3 Bulan)</span>
                                 <div class="kpi-icon-wrap"><i class="simple-icon simple-icon-alert" aria-hidden="true"></i></div>
                             </div>
-                            <div class="kpi-value" id="kpiLifevestWarning" style="color: #f59e0b;">520</div>
-                            <div class="kpi-subtext">Jatuh tempo 30-60 hari</div>
+                            <div class="kpi-value" id="kpiLifevestCritical" style="color: #f43f5e;">492</div>
+                            <div class="kpi-subtext">Jatuh tempo &lt;3 bulan</div>
                         </div>
 
                         <div class="kpi-card kpi-accent-purple">
                             <div class="kpi-card-top">
-                                <span class="kpi-label">Critical</span>
+                                <span class="kpi-label">Expired</span>
                                 <div class="kpi-icon-wrap"><i class="simple-icon simple-icon-alert" aria-hidden="true"></i></div>
                             </div>
-                            <div class="kpi-value" id="kpiLifevestCritical" style="color: #f43f5e;">210</div>
-                            <div class="kpi-subtext">Jatuh tempo &lt;30 hari</div>
+                            <div class="kpi-value" id="kpiLifevestExpired" style="color: #8b5cf6;">3,917</div>
+                            <div class="kpi-subtext">Melewati batas waktu / Kadaluwarsa</div>
                         </div>
                     </div>
 
