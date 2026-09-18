@@ -1,0 +1,178 @@
+/* ==========================================================================
+   icons.css — Simple CSS Icon System
+   ========================================================================== */
+
+.simple-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    position: relative;
+    color: currentColor;
+    vertical-align: -0.12em;
+}
+
+.simple-icon::before,
+.simple-icon::after {
+    content: '';
+    position: absolute;
+    border: 1.7px solid currentColor;
+}
+
+.simple-icon-global::before {
+    inset: 0.08em;
+    border-radius: 50%;
+}
+
+.simple-icon-global::after {
+    inset: 0.08em 0.35em;
+    border-radius: 50%;
+}
+
+.simple-icon-cert::before {
+    inset: 0.12em 0.2em;
+    border-radius: 0.08em;
+}
+
+.simple-icon-cert::after {
+    left: 0.38em;
+    right: 0.38em;
+    top: 0.38em;
+    height: 0.1em;
+    border-width: 1.7px 0;
+}
+
+.simple-icon-ldnd::before {
+    inset: 0.08em;
+    transform: rotate(45deg);
+    border-radius: 0.08em;
+}
+
+.simple-icon-ldnd::after {
+    inset: 0.35em;
+    border-radius: 50%;
+}
+
+.simple-icon-lifevest::before {
+    inset: 0.08em 0.22em;
+    border-radius: 0.2em 0.2em 0.08em 0.08em;
+}
+
+.simple-icon-lifevest::after {
+    left: 0.48em;
+    top: 0.08em;
+    bottom: 0.08em;
+    border-width: 0 1.7px;
+}
+
+.simple-icon-chart::before {
+    inset: 0.12em 0.1em;
+    border-width: 0 0 1.7px 1.7px;
+}
+
+.simple-icon-chart::after {
+    left: 0.35em;
+    bottom: 0.25em;
+    width: 0.42em;
+    height: 0.42em;
+    border-width: 1.7px 1.7px 0 0;
+    transform: skewY(-35deg);
+}
+
+.simple-icon-users::before {
+    left: 0.12em;
+    top: 0.12em;
+    width: 0.36em;
+    height: 0.36em;
+    border-radius: 50%;
+    box-shadow: 0.4em 0.08em 0 -0.03em transparent, 0.4em 0.08em 0 0 currentColor;
+}
+
+.simple-icon-users::after {
+    left: 0.08em;
+    right: 0.08em;
+    bottom: 0.12em;
+    height: 0.34em;
+    border-radius: 0.35em 0.35em 0.1em 0.1em;
+}
+
+.simple-icon-shield::before {
+    inset: 0.08em 0.16em;
+    border-radius: 0.45em 0.45em 0.55em 0.55em;
+    transform: scaleY(1.05);
+}
+
+.simple-icon-shield::after {
+    left: 0.47em;
+    top: 0.3em;
+    width: 0.08em;
+    height: 0.32em;
+    border-width: 0 1.7px 1.7px 0;
+    transform: rotate(45deg);
+}
+
+.simple-icon-clock::before {
+    inset: 0.08em;
+    border-radius: 50%;
+}
+
+.simple-icon-clock::after {
+    left: 0.48em;
+    top: 0.23em;
+    width: 0.16em;
+    height: 0.3em;
+    border-width: 0 0 1.7px 1.7px;
+}
+
+.simple-icon-alert::before {
+    inset: 0.08em 0.18em;
+    border-radius: 0.12em;
+    transform: rotate(45deg) scale(0.82);
+}
+
+.simple-icon-alert::after {
+    left: 0.48em;
+    top: 0.25em;
+    height: 0.42em;
+    border-width: 0 1.7px 0 0;
+}
+
+.simple-icon-plane::before {
+    inset: 0.32em 0.05em;
+    transform: rotate(-28deg);
+    border-width: 1.7px 0 0;
+}
+
+.simple-icon-plane::after {
+    inset: 0.05em 0.4em;
+    transform: rotate(45deg);
+    border-width: 0 1.7px;
+}
+
+.simple-icon-box::before {
+    inset: 0.2em 0.08em 0.08em;
+}
+
+.simple-icon-box::after {
+    left: 0.08em;
+    right: 0.08em;
+    top: 0.2em;
+    height: 0.18em;
+    border-width: 1.7px 0;
+    transform: skewY(-25deg);
+}
+
+.simple-icon-calendar::before {
+    inset: 0.15em 0.1em 0.08em;
+    border-radius: 0.08em;
+}
+
+.simple-icon-calendar::after {
+    left: 0.1em;
+    right: 0.1em;
+    top: 0.34em;
+    border-width: 1.7px 0 0;
+}
+
+.simple-icon+* {
+    margin-left: 0.25rem;
+}

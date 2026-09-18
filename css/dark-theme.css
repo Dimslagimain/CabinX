@@ -1,0 +1,106 @@
+/* ==========================================================================
+   dark-theme.css — Luxury Dark Theme Scoped Overrides
+   Shimmer, Glow, Gradients & Depth visible when user selects dark theme
+   ========================================================================== */
+
+/* Hero banner — module accent top glow */
+[data-theme="dark"] .module-hero {
+    background: linear-gradient(135deg, rgba(24, 29, 43, 0.92) 0%, rgba(16, 20, 32, 0.96) 100%);
+    border-top-color: rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .module-hero.theme-cert {
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(56, 189, 248, 0.2), 0 0 60px rgba(56, 189, 248, 0.04);
+}
+
+[data-theme="dark"] .module-hero.theme-ldnd {
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(16, 185, 129, 0.2), 0 0 60px rgba(16, 185, 129, 0.04);
+}
+
+[data-theme="dark"] .module-hero.theme-lifevest {
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(6, 182, 212, 0.2), 0 0 60px rgba(6, 182, 212, 0.04);
+}
+
+[data-theme="dark"] .module-hero.theme-global {
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(168, 85, 247, 0.2), 0 0 60px rgba(168, 85, 247, 0.04);
+}
+
+/* KPI cards — colored bottom-accent hover glow */
+[data-theme="dark"] .kpi-accent-cyan:hover {
+    box-shadow: var(--shadow-md), 0 8px 32px rgba(6, 182, 212, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .kpi-accent-emerald:hover {
+    box-shadow: var(--shadow-md), 0 8px 32px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .kpi-accent-amber:hover {
+    box-shadow: var(--shadow-md), 0 8px 32px rgba(245, 158, 11, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .kpi-accent-rose:hover {
+    box-shadow: var(--shadow-md), 0 8px 32px rgba(244, 63, 94, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .kpi-accent-purple:hover {
+    box-shadow: var(--shadow-md), 0 8px 32px rgba(139, 92, 246, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Project showcase — module-colored hover glow */
+[data-theme="dark"] .project-showcase-card.card-cert:hover {
+    box-shadow: var(--shadow-lg), 0 18px 50px rgba(56, 189, 248, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .project-showcase-card.card-ldnd:hover {
+    box-shadow: var(--shadow-lg), 0 18px 50px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .project-showcase-card.card-lifevest:hover {
+    box-shadow: var(--shadow-lg), 0 18px 50px rgba(6, 182, 212, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Sidebar — gradient depth + soft border */
+[data-theme="dark"] .sidebar {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-main) 100%);
+    border-right-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .sidebar-nav-item.active {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-elevated) 100%);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Nav module switcher container */
+[data-theme="dark"] .nav-module-switcher {
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Navbar icon buttons — subtle cyan glow on hover */
+[data-theme="dark"] .navbar-icon-btn:hover {
+    box-shadow: 0 0 14px rgba(6, 182, 212, 0.18);
+}
+
+/* Form inputs — premium inset shadow */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .filter-input-search,
+[data-theme="dark"] .filter-select {
+    background: rgba(10, 13, 20, 0.75);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Data table row hover — tinted sweep instead of flat bg */
+[data-theme="dark"] .data-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(6, 182, 212, 0.04) 0%, var(--bg-card-hover) 100%);
+}
+
+/* Scrollbar — subtle accent in dark mode */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+}

@@ -1,0 +1,88 @@
+/* ==========================================================================
+   hero.css — Module Hero Banner & Header
+   ========================================================================== */
+
+.module-hero {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-elevated) 100%);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(12px);
+}
+
+.module-hero::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    opacity: 0.15;
+}
+
+.module-hero.theme-cert::after {
+    background: #38bdf8;
+}
+
+.module-hero.theme-ldnd::after {
+    background: #10b981;
+}
+
+.module-hero.theme-lifevest::after {
+    background: #06b6d4;
+}
+
+.module-hero.theme-global::after {
+    background: #a855f7;
+}
+
+.module-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 1;
+}
+
+.module-meta-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.module-hero-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.module-hero-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 650px;
+    line-height: 1.5;
+}
+
+.module-hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    z-index: 1;
+    flex-shrink: 0;
+}

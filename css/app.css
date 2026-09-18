@@ -35,33 +35,33 @@
     --purple: #8b5cf6;
     --purple-rgb: 139, 92, 246;
 
-    /* Theme - Dark (Default) */
-    --bg-main: #0a0f1d;
-    --bg-secondary: #0f172a;
-    --bg-card: #131d33;
-    --bg-card-hover: #192744;
-    --bg-card-elevated: #1e293b;
-    --bg-glass: rgba(19, 29, 51, 0.85);
+    /* Theme - Dark (Default - Luxury Obsidian Slate) */
+    --bg-main: #0a0d14;
+    --bg-secondary: #0f131c;
+    --bg-card: #141824;
+    --bg-card-hover: #1b2130;
+    --bg-card-elevated: #181d2b;
+    --bg-glass: rgba(10, 13, 20, 0.82);
 
-    --border: rgba(148, 163, 184, 0.22);
-    --border-strong: rgba(148, 163, 184, 0.4);
-    --border-subtle: rgba(148, 163, 184, 0.12);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --border-subtle: rgba(255, 255, 255, 0.04);
 
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-inverse: #0f172a;
+    --text-muted: #808ea3;
+    --text-inverse: #0a0d14;
 
     /* Layout Dimensions */
     --sidebar-width: 270px;
     --sidebar-collapsed-width: 76px;
     --navbar-height: 64px;
 
-    /* Elevation & Shadows */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.55);
-    --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.3);
+    /* Elevation & Shadows - Luxury Glassmorphism & Soft Ambient Glow */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --shadow-md: 0 12px 32px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --shadow-lg: 0 22px 50px -10px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --shadow-glow: 0 0 30px rgba(6, 182, 212, 0.35);
 
     /* Animation Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -117,11 +117,12 @@ body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-main);
     background-image:
-        linear-gradient(115deg, rgba(6, 182, 212, 0.07), transparent 35%),
-        linear-gradient(245deg, rgba(139, 92, 246, 0.08), transparent 42%),
-        linear-gradient(90deg, transparent 49.8%, rgba(148, 163, 184, 0.045) 50%, transparent 50.2%),
-        linear-gradient(0deg, transparent 49.8%, rgba(148, 163, 184, 0.035) 50%, transparent 50.2%);
-    background-size: auto, auto, 72px 72px, 72px 72px;
+        radial-gradient(circle at 18% 12%, rgba(6, 182, 212, 0.08) 0%, transparent 42%),
+        radial-gradient(circle at 82% 18%, rgba(139, 92, 246, 0.07) 0%, transparent 38%),
+        radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+        linear-gradient(90deg, transparent 49.8%, rgba(255, 255, 255, 0.02) 50%, transparent 50.2%),
+        linear-gradient(0deg, transparent 49.8%, rgba(255, 255, 255, 0.015) 50%, transparent 50.2%);
+    background-size: auto, auto, auto, 80px 80px, 80px 80px;
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.5;
@@ -140,11 +141,11 @@ body {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.6;
     background:
-        linear-gradient(135deg, transparent 0 42%, rgba(6, 182, 212, 0.08) 42.2% 42.5%, transparent 42.7%),
-        linear-gradient(35deg, transparent 0 61%, rgba(139, 92, 246, 0.07) 61.2% 61.6%, transparent 61.8%);
-    mask-image: linear-gradient(to bottom, black, transparent 88%);
+        radial-gradient(600px circle at 40% 0%, rgba(6, 182, 212, 0.06), transparent 80%),
+        linear-gradient(135deg, transparent 0 42%, rgba(6, 182, 212, 0.06) 42.2% 42.5%, transparent 42.7%);
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
 }
 
 #settingsOpenBtn,
@@ -203,9 +204,10 @@ button {
 .navbar {
     height: var(--navbar-height);
     background: var(--bg-glass);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     position: sticky;
     top: 0;
     z-index: 100;
